@@ -257,6 +257,7 @@ footer { padding: 32px 0; color: var(--texto-2); font-size: .9rem; text-align: c
 .pestanas a:hover { color: var(--primario); }
 .pestanas a[aria-current="page"] { color: var(--acento); border-bottom-color: var(--acento); }
 .pestanas a[hidden] { display: none; }
+.pestanas .pestana-externa { margin-left: auto; color: var(--acento); }
 .seccion-app { padding-top: 24px; padding-bottom: 96px; }
 .titulo-panel { font-size: clamp(1.5rem, 5vw, 2rem); }
 .bloque { margin-top: 28px; }
