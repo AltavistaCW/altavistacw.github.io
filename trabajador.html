@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1E293B">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" href="iconos/icono-192.png">
+  <link rel="apple-touch-icon" href="iconos/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Alta Vista">
+  <title>Mi jornada</title>
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Rubik:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+  <header class="header">
+    <div class="contenedor">
+      <span class="marca">
+        <svg class="icono" aria-hidden="true"><use href="#i-gota"></use></svg>
+        <span data-usuario="nombre">Trabajador</span>
+      </span>
+      <button type="button" class="btn btn-claro btn-sm" id="salir">
+        <svg class="icono" aria-hidden="true"><use href="#i-salir"></use></svg> Salir
+      </button>
+    </div>
+  </header>
+
+  <nav class="pestanas" aria-label="Secciones">
+    <div class="contenedor">
+      <a href="#jornada" data-pestana="jornada">
+        <svg class="icono" aria-hidden="true"><use href="#i-auto"></use></svg> Mi jornada
+      </a>
+      <a href="#historial" data-pestana="historial">
+        <svg class="icono" aria-hidden="true"><use href="#i-lista"></use></svg> Mi historial
+      </a>
+      <a href="dueno.html" id="ir-panel" hidden>
+        <svg class="icono" aria-hidden="true"><use href="#i-grafico"></use></svg> Panel
+      </a>
+    </div>
+  </nav>
+
+  <main class="contenedor seccion seccion-app">
+    <div id="avisos"></div>
+
+    <!-- Pantalla 1: Mi jornada -->
+    <section data-panel="jornada" aria-labelledby="titulo-jornada">
+      <h1 id="titulo-jornada" class="titulo-panel">Mi jornada</h1>
+      <p class="texto-2" id="fecha-hoy"></p>
+
+      <div class="tarjeta tarjeta-turno" id="turno" aria-live="polite"></div>
+
+      <div class="acciones-rapidas">
+        <button type="button" class="btn btn-primario" id="btn-sin-reserva">
+          <svg class="icono" aria-hidden="true"><use href="#i-mas"></use></svg> Auto sin reserva
+        </button>
+        <button type="button" class="btn btn-secundario" id="btn-otra">
+          <svg class="icono" aria-hidden="true"><use href="#i-lista"></use></svg> Otra actividad
+        </button>
+      </div>
+
+      <section aria-labelledby="titulo-mis-autos" class="bloque">
+        <h2 id="titulo-mis-autos">Mis autos</h2>
+        <ul class="agenda" id="mis-autos" aria-live="polite"></ul>
+      </section>
+
+      <section aria-labelledby="titulo-por-atender" class="bloque">
+        <h2 id="titulo-por-atender">Por atender hoy</h2>
+        <ul class="agenda" id="por-atender" aria-live="polite"></ul>
+      </section>
+    </section>
+
+    <!-- Pantalla 2: Mi historial -->
+    <section data-panel="historial" aria-labelledby="titulo-historial" hidden>
+      <h1 id="titulo-historial" class="titulo-panel">Mi historial</h1>
+      <div class="segmentado" id="periodo-historial" role="group" aria-label="Período">
+        <button type="button" data-periodo="hoy" aria-pressed="true">Hoy</button>
+        <button type="button" data-periodo="7" aria-pressed="false">Últimos 7 días</button>
+        <button type="button" data-periodo="mes" aria-pressed="false">Este mes</button>
+      </div>
+      <section class="kpis cuatro" id="kpis-historial" aria-label="Resumen del período"></section>
+      <ul class="lista-actividad" id="lista-historial"></ul>
+    </section>
+  </main>
+
+  <script src="js/pwa.js"></script>
+  <script src="js/iconos.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/almacen.js"></script>
+  <script src="js/datos.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/trabajador.js"></script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#1E293B">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" href="iconos/icono-192.png">
@@ -23,69 +23,238 @@
         <svg class="icono" aria-hidden="true"><use href="#i-gota"></use></svg>
         <span><span data-negocio="nombre">Lavado</span> · Panel</span>
       </a>
-      <a class="btn btn-claro btn-sm" href="cliente.html">Ver como cliente</a>
+      <div class="cabecera-usuario">
+        <span class="cabecera-nombre" data-usuario="nombre"></span>
+        <button type="button" class="btn btn-claro btn-sm" id="salir">
+          <svg class="icono" aria-hidden="true"><use href="#i-salir"></use></svg> Salir
+        </button>
+      </div>
     </div>
   </header>
 
-  <main class="contenedor seccion">
-    <div class="aviso" style="margin-bottom:20px">
-      <svg class="icono" aria-hidden="true"><use href="#i-info"></use></svg>
-      <span style="flex:1">Modo demostración: las reservas son de ejemplo o creadas en este navegador; aún no hay base de datos.</span>
-      <button type="button" class="btn btn-secundario btn-sm" id="reiniciar-demo">Reiniciar demo</button>
+  <nav class="pestanas" aria-label="Secciones del panel">
+    <div class="contenedor">
+      <a href="#hoy" data-pestana="hoy"><svg class="icono" aria-hidden="true"><use href="#i-calendario"></use></svg> Hoy</a>
+      <a href="#actividad" data-pestana="actividad"><svg class="icono" aria-hidden="true"><use href="#i-lista"></use></svg> Actividad</a>
+      <a href="#equipo" data-pestana="equipo"><svg class="icono" aria-hidden="true"><use href="#i-usuarios"></use></svg> Equipo</a>
+      <a href="#precios" data-pestana="precios"><svg class="icono" aria-hidden="true"><use href="#i-dinero"></use></svg> Precios</a>
+      <a href="#negocio" data-pestana="negocio"><svg class="icono" aria-hidden="true"><use href="#i-reloj"></use></svg> Negocio</a>
     </div>
+  </nav>
 
-    <!-- Selector de fecha -->
-    <div class="barra-fecha">
-      <button type="button" class="btn btn-secundario btn-icono" id="dia-anterior" aria-label="Día anterior">
-        <svg class="icono" aria-hidden="true"><use href="#i-izquierda"></use></svg>
-      </button>
-      <label class="sr-only" for="fecha">Fecha</label>
-      <input type="date" id="fecha">
-      <button type="button" class="btn btn-secundario btn-icono" id="dia-siguiente" aria-label="Día siguiente">
-        <svg class="icono" aria-hidden="true"><use href="#i-derecha"></use></svg>
-      </button>
-      <button type="button" class="btn btn-secundario btn-sm" id="ir-hoy">Hoy</button>
-      <h1 id="titulo-dia" style="font-size:1.4rem;margin:0 0 0 4px"></h1>
-    </div>
+  <main class="contenedor seccion seccion-app">
+    <div id="avisos"></div>
 
-    <!-- KPIs -->
-    <section class="kpis" aria-label="Indicadores del día" id="kpis"></section>
+    <!-- ===== Hoy ===== -->
+    <section data-panel="hoy" aria-labelledby="titulo-dia">
+      <div class="barra-fecha">
+        <button type="button" class="btn btn-secundario btn-icono" id="dia-anterior" aria-label="Día anterior">
+          <svg class="icono" aria-hidden="true"><use href="#i-izquierda"></use></svg>
+        </button>
+        <label class="sr-only" for="fecha">Fecha</label>
+        <input type="date" id="fecha">
+        <button type="button" class="btn btn-secundario btn-icono" id="dia-siguiente" aria-label="Día siguiente">
+          <svg class="icono" aria-hidden="true"><use href="#i-derecha"></use></svg>
+        </button>
+        <button type="button" class="btn btn-secundario btn-sm" id="ir-hoy">Hoy</button>
+        <h1 id="titulo-dia" style="font-size:1.4rem;margin:0 0 0 4px"></h1>
+      </div>
 
-    <!-- Ranking de servicios -->
-    <section class="tarjeta ranking" aria-labelledby="titulo-ranking">
-      <div class="ranking-cabecera">
-        <h2 id="titulo-ranking" style="font-size:1.2rem;margin:0">¿Qué se vende más?</h2>
-        <div class="segmentado segmentado-sm" id="periodo-ranking" role="group" aria-label="Período">
-          <button type="button" data-periodo="1" aria-pressed="true">Este día</button>
-          <button type="button" data-periodo="7" aria-pressed="false">Últimos 7 días</button>
+      <section class="kpis cuatro" aria-label="Indicadores del día" id="kpis"></section>
+
+      <div class="panel-columnas">
+        <section aria-labelledby="titulo-agenda">
+          <h2 id="titulo-agenda">Agenda</h2>
+          <div class="segmentado" id="filtro-estado" role="group" aria-label="Filtrar por estado"></div>
+          <ul class="agenda" id="agenda" aria-live="polite"></ul>
+        </section>
+
+        <div class="grilla">
+          <section class="tarjeta" aria-labelledby="titulo-equipo-hoy">
+            <h3 id="titulo-equipo-hoy">Equipo hoy</h3>
+            <ul class="lista-simple" id="equipo-hoy"></ul>
+          </section>
+
+          <section class="tarjeta ranking" aria-labelledby="titulo-ranking">
+            <div class="ranking-cabecera">
+              <h3 id="titulo-ranking" style="margin:0">¿Qué se vende más?</h3>
+              <div class="segmentado segmentado-sm" id="periodo-ranking" role="group" aria-label="Período">
+                <button type="button" data-periodo="1" aria-pressed="true">Este día</button>
+                <button type="button" data-periodo="7" aria-pressed="false">7 días</button>
+              </div>
+            </div>
+            <ol class="ranking-lista" id="ranking"></ol>
+            <p class="texto-2 ranking-nota" id="ranking-nota"></p>
+          </section>
         </div>
       </div>
-      <ol class="ranking-lista" id="ranking"></ol>
-      <p class="texto-2 ranking-nota" id="ranking-nota"></p>
     </section>
 
-    <div class="panel-columnas">
-      <!-- Agenda -->
-      <section aria-labelledby="titulo-agenda">
-        <h2 id="titulo-agenda">Agenda</h2>
-        <div class="segmentado" id="filtro-estado" role="group" aria-label="Filtrar por estado"></div>
-        <ul class="agenda" id="agenda" aria-live="polite"></ul>
-      </section>
+    <!-- ===== Actividad del equipo ===== -->
+    <section data-panel="actividad" aria-labelledby="titulo-actividad" hidden>
+      <h1 id="titulo-actividad" class="titulo-panel">Actividad del equipo</h1>
+      <form class="tarjeta filtros" id="filtros-actividad">
+        <div class="campo"><label for="a-desde">Desde</label><input type="date" id="a-desde" name="desde"></div>
+        <div class="campo"><label for="a-hasta">Hasta</label><input type="date" id="a-hasta" name="hasta"></div>
+        <div class="campo"><label for="a-persona">Persona</label><select id="a-persona" name="uid"></select></div>
+        <div class="campo"><label for="a-tipo">Tipo</label><select id="a-tipo" name="tipo"></select></div>
+      </form>
 
-      <!-- Columna lateral -->
-      <div class="grilla">
-        <section class="tarjeta" aria-labelledby="titulo-precios">
-          <h3 id="titulo-precios">Lista de precios</h3>
-          <div class="tabla-scroll"><table id="tabla-precios"></table></div>
-          <p class="texto-2" style="margin:12px 0 0;font-size:.85rem">Se editan en <code>data/servicios.json</code>.</p>
+      <section class="kpis cuatro" id="kpis-actividad" aria-label="Resumen del período"></section>
+
+      <div class="panel-columnas">
+        <section aria-labelledby="titulo-registro">
+          <h2 id="titulo-registro">Registro</h2>
+          <ul class="lista-actividad" id="lista-actividad"></ul>
         </section>
+        <div class="grilla">
+          <section class="tarjeta" aria-labelledby="titulo-por-persona">
+            <h3 id="titulo-por-persona">Por persona</h3>
+            <div class="tabla-scroll"><table id="tabla-por-persona"></table></div>
+          </section>
+          <section class="tarjeta" aria-labelledby="titulo-caja">
+            <h3 id="titulo-caja">Caja por medio de pago</h3>
+            <table id="tabla-caja"></table>
+          </section>
+        </div>
       </div>
-    </div>
+    </section>
+
+    <!-- ===== Equipo ===== -->
+    <section data-panel="equipo" aria-labelledby="titulo-equipo" hidden>
+      <h1 id="titulo-equipo" class="titulo-panel">Equipo</h1>
+      <p class="texto-2">Quién puede usar la app. Cada trabajador entra con su correo y clave y ve dos pantallas: <strong>Mi jornada</strong> y <strong>Mi historial</strong>.</p>
+      <div class="panel-columnas">
+        <ul class="agenda" id="lista-equipo" aria-live="polite"></ul>
+        <form class="tarjeta" id="form-miembro" novalidate aria-labelledby="titulo-agregar">
+          <h2 id="titulo-agregar" style="font-size:1.2rem">Dar acceso a una persona</h2>
+          <div class="campo">
+            <label for="m-nombre">Nombre</label>
+            <input id="m-nombre" name="nombre" autocomplete="off" required>
+          </div>
+          <div class="campo">
+            <label for="m-email">Correo</label>
+            <input id="m-email" name="email" type="email" inputmode="email" autocomplete="off" required>
+            <span class="ayuda">Con este correo entrará a la app. Si quiere recuperar su clave, le llegará ahí.</span>
+          </div>
+          <div class="campo">
+            <label for="m-clave">Clave inicial</label>
+            <input id="m-clave" name="clave" type="text" autocomplete="new-password" minlength="6" required>
+            <span class="ayuda">Mínimo 6 caracteres. Se la entregas tú.</span>
+          </div>
+          <div class="campo">
+            <label for="m-rol">Rol</label>
+            <select id="m-rol" name="rol">
+              <option value="trabajador">Trabajador: registra su jornada</option>
+              <option value="dueno">Dueño: acceso a todo el panel</option>
+            </select>
+          </div>
+          <div class="error" id="e-miembro" role="alert"></div>
+          <button type="submit" class="btn btn-primario btn-bloque">
+            <svg class="icono" aria-hidden="true"><use href="#i-mas"></use></svg> Dar acceso
+          </button>
+          <div id="resultado-miembro" aria-live="polite"></div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===== Servicios y precios ===== -->
+    <section data-panel="precios" aria-labelledby="titulo-precios" hidden>
+      <h1 id="titulo-precios" class="titulo-panel">Servicios y precios</h1>
+      <p class="texto-2">Los cambios se ven al instante en la página de reservas. Las reservas ya hechas mantienen su precio.</p>
+      <form id="form-precios" novalidate>
+        <div class="grilla" id="editor-servicios"></div>
+        <button type="button" class="btn btn-secundario" id="agregar-servicio" style="margin:16px 0 24px">
+          <svg class="icono" aria-hidden="true"><use href="#i-mas"></use></svg> Agregar servicio
+        </button>
+
+        <section class="tarjeta" aria-labelledby="titulo-vehiculos">
+          <h2 id="titulo-vehiculos" style="font-size:1.2rem">Tipos de vehículo</h2>
+          <div id="editor-vehiculos" class="grilla"></div>
+          <button type="button" class="btn btn-secundario btn-sm" id="agregar-vehiculo" style="margin-top:12px">
+            <svg class="icono" aria-hidden="true"><use href="#i-mas"></use></svg> Agregar tipo de vehículo
+          </button>
+        </section>
+
+        <div class="barra-guardar">
+          <span class="texto-2" id="estado-precios"></span>
+          <button type="submit" class="btn btn-primario">Guardar precios</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ===== Negocio y horario ===== -->
+    <section data-panel="negocio" aria-labelledby="titulo-negocio" hidden>
+      <h1 id="titulo-negocio" class="titulo-panel">Negocio y horario</h1>
+      <form id="form-negocio" novalidate>
+        <div class="grilla columnas-2">
+          <section class="tarjeta" aria-labelledby="titulo-datos-local">
+            <h2 id="titulo-datos-local" style="font-size:1.2rem">Datos del local</h2>
+            <div class="campo"><label for="n-nombre">Nombre</label><input id="n-nombre" name="nombre" required></div>
+            <div class="campo"><label for="n-eslogan">Frase</label><input id="n-eslogan" name="eslogan"></div>
+            <div class="campo"><label for="n-direccion">Dirección</label><input id="n-direccion" name="direccion" required></div>
+            <div class="fila-2">
+              <div class="campo"><label for="n-telefono">Teléfono</label><input id="n-telefono" name="telefono" type="tel" required></div>
+              <div class="campo">
+                <label for="n-whatsapp">WhatsApp</label>
+                <input id="n-whatsapp" name="whatsapp" inputmode="numeric" required>
+                <span class="ayuda">Solo números, con 56: 569XXXXXXXX</span>
+              </div>
+            </div>
+            <div class="campo">
+              <label for="n-medios">Medios de pago</label>
+              <input id="n-medios" name="mediosPago" required>
+              <span class="ayuda">Separados por coma. Ej.: Efectivo, Transferencia, Tarjeta</span>
+            </div>
+          </section>
+
+          <section class="tarjeta" aria-labelledby="titulo-horario">
+            <h2 id="titulo-horario" style="font-size:1.2rem">Horario y capacidad</h2>
+            <div class="fila-2">
+              <div class="campo"><label for="n-apertura">Abre</label><input id="n-apertura" name="apertura" type="time" required></div>
+              <div class="campo"><label for="n-cierre">Cierra</label><input id="n-cierre" name="cierre" type="time" required></div>
+            </div>
+            <fieldset class="campo opciones">
+              <legend>Días abiertos</legend>
+              <div class="dias" id="n-dias"></div>
+            </fieldset>
+            <div class="fila-2">
+              <div class="campo">
+                <label for="n-intervalo">Horas de reserva cada</label>
+                <select id="n-intervalo" name="intervaloMin">
+                  <option value="15">15 minutos</option>
+                  <option value="30">30 minutos</option>
+                  <option value="60">1 hora</option>
+                </select>
+              </div>
+              <div class="campo">
+                <label for="n-capacidad">Autos a la vez</label>
+                <input id="n-capacidad" name="capacidadSimultanea" type="number" min="1" max="20" inputmode="numeric" required>
+              </div>
+            </div>
+            <div class="campo">
+              <label for="n-texto">Horario como lo ven los clientes</label>
+              <input id="n-texto" name="texto" required>
+              <button type="button" class="btn btn-secundario btn-sm" id="generar-texto" style="align-self:flex-start">Escribirlo según el horario</button>
+            </div>
+          </section>
+        </div>
+
+        <div class="error" id="e-negocio" role="alert"></div>
+        <div class="barra-guardar">
+          <span class="texto-2" id="estado-negocio"></span>
+          <button type="submit" class="btn btn-primario">Guardar datos del negocio</button>
+        </div>
+      </form>
+    </section>
   </main>
 
   <script src="js/pwa.js"></script>
   <script src="js/iconos.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/almacen.js"></script>
   <script src="js/datos.js"></script>
+  <script src="js/ui.js"></script>
   <script src="js/dueno.js"></script>
 </body>
 </html>

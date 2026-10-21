@@ -16,6 +16,7 @@
   ],
   "shortcuts": [
     { "name": "Reservar hora", "url": "cliente.html#reservar" },
+    { "name": "Mi jornada", "url": "trabajador.html" },
     { "name": "Panel del dueño", "url": "dueno.html" }
   ]
 }

@@ -1,0 +1,59 @@
+// Reglas de seguridad de la base de datos (Firestore).
+// Se copian en: Consola de Firebase → Firestore Database → Reglas → Publicar.
+//
+// ANTES DE PUBLICAR: cambiar el correo de abajo por el correo del dueño principal.
+// Esa persona siempre tiene acceso total, aunque se borre su ficha del equipo.
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function correoDuenoPrincipal() { return 'fzarrias@hotmail.es'; }
+
+    function conSesion() { return request.auth != null; }
+    function ficha() { return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data; }
+    function tieneFicha() { return exists(/databases/$(database)/documents/usuarios/$(request.auth.uid)); }
+    function esDuenoPrincipal() { return conSesion() && request.auth.token.email == correoDuenoPrincipal(); }
+    function esDueno() {
+      return esDuenoPrincipal() || (conSesion() && tieneFicha() && ficha().activo == true && ficha().rol == 'dueno');
+    }
+    // Equipo = cualquier persona con acceso activo (dueño o trabajador).
+    function esEquipo() { return esDueno() || (conSesion() && tieneFicha() && ficha().activo == true); }
+
+    // Datos del local, horario y precios: los ve cualquiera, los cambia solo el dueño.
+    match /config/{doc} {
+      allow read: if true;
+      allow write: if esDueno();
+    }
+
+    // Fichas del equipo: cada uno ve la suya; el dueño ve y administra todas.
+    match /usuarios/{uid} {
+      allow read: if conSesion() && (request.auth.uid == uid || esDueno());
+      allow write: if esDueno();
+    }
+
+    // Reservas (sin nombre ni teléfono): lectura pública para mostrar horas libres y el estado por patente.
+    // Un cliente sin sesión solo puede crear reservas nuevas "pendiente" desde la web.
+    match /reservas/{id} {
+      allow read: if true;
+      allow create: if esEquipo()
+        || (request.resource.data.estado == 'pendiente' && request.resource.data.origen == 'web');
+      allow update: if esEquipo();
+      allow delete: if esDueno();
+    }
+
+    // Nombre y teléfono de cada reserva: el cliente los envía, solo el equipo los puede leer.
+    match /contactos/{id} {
+      allow create: if true;
+      allow read, update: if esEquipo();
+      allow delete: if esDueno();
+    }
+
+    // Registro de actividades: cada trabajador crea y ve las suyas; el dueño ve, corrige y borra todas.
+    match /actividades/{id} {
+      allow read: if esDueno() || (esEquipo() && resource.data.uid == request.auth.uid);
+      allow create: if esDueno() || (esEquipo() && request.resource.data.uid == request.auth.uid);
+      allow update, delete: if esDueno();
+    }
+  }
+}

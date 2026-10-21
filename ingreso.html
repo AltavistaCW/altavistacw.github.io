@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1E293B">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" href="iconos/icono-192.png">
+  <link rel="apple-touch-icon" href="iconos/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Alta Vista">
+  <title>Ingreso del equipo</title>
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Rubik:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body class="inicio">
+  <header class="inicio-cabecera">
+    <div class="inicio-marca">
+      <span class="inicio-logo"><svg class="icono" aria-hidden="true"><use href="#i-gota"></use></svg></span>
+      <div>
+        <h1>Ingreso del equipo</h1>
+        <p data-negocio="nombre">Alta Vista Carwash</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="inicio-cuerpo">
+    <div id="mensaje" aria-live="polite"></div>
+
+    <form class="tarjeta" id="form-ingreso" novalidate>
+      <div class="campo">
+        <label for="f-email">Correo</label>
+        <input type="email" id="f-email" autocomplete="username" inputmode="email" required>
+      </div>
+      <div class="campo">
+        <label for="f-clave">Clave</label>
+        <input type="password" id="f-clave" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn btn-primario btn-bloque">
+        <svg class="icono" aria-hidden="true"><use href="#i-candado"></use></svg> Ingresar
+      </button>
+      <button type="button" class="btn btn-secundario btn-bloque" id="olvide" style="margin-top:10px">Olvidé mi clave</button>
+    </form>
+
+    <section class="tarjeta" id="cuentas-demo" hidden aria-labelledby="titulo-demo">
+      <h2 id="titulo-demo" style="font-size:1.1rem">Modo demostración</h2>
+      <p class="texto-2" style="font-size:.95rem">Aún no hay base de datos conectada. Entra con una cuenta de prueba (clave <code>demo1234</code>):</p>
+      <div class="grilla" id="botones-demo"></div>
+    </section>
+
+    <a class="acceso-dueno" href="index.html">
+      <svg class="icono" aria-hidden="true"><use href="#i-volver"></use></svg> Volver al inicio
+    </a>
+  </main>
+
+  <script src="js/pwa.js"></script>
+  <script src="js/iconos.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/almacen.js"></script>
+  <script src="js/datos.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/ingreso.js"></script>
+</body>
+</html>

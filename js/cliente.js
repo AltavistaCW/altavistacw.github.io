@@ -1,16 +1,17 @@
 /* Vista cliente: catálogo, reserva y consulta de estado. */
 (async () => {
   const $ = (sel) => document.querySelector(sel);
-  const estado = { negocio: null, servicios: [], reservas: [], vehiculo: 'auto', hora: null };
+  const esc = Datos.escapar;
+  const estado = { negocio: null, servicios: [], vehiculo: 'auto', hora: null };
 
   try {
-    [estado.negocio, estado.servicios, estado.reservas] =
-      await Promise.all([Datos.negocio(), Datos.servicios(), Datos.reservas()]);
+    [estado.negocio, estado.servicios] = await Promise.all([Datos.negocio(), Datos.servicios()]);
   } catch (err) {
     document.querySelector('main').insertAdjacentHTML('afterbegin',
-      `<div class="contenedor" style="padding-top:16px"><div class="aviso">No se pudieron cargar los datos. ${err.message}</div></div>`);
+      `<div class="contenedor" style="padding-top:16px"><div class="aviso">No se pudieron cargar los datos. ${esc(err.message)}</div></div>`);
     return;
   }
+  $('#aviso-demo').hidden = Datos.modo !== 'demo';
   const { negocio, servicios } = estado;
   estado.vehiculo = negocio.tiposVehiculo[0].id;
 
@@ -25,18 +26,18 @@
   // ---- Catálogo ----
   function pintarFiltro() {
     $('#filtro-vehiculo').innerHTML = negocio.tiposVehiculo.map(v =>
-      `<button type="button" data-vehiculo="${v.id}" aria-pressed="${v.id === estado.vehiculo}">${v.nombre}</button>`).join('');
+      `<button type="button" data-vehiculo="${esc(v.id)}" aria-pressed="${v.id === estado.vehiculo}">${esc(v.nombre)}</button>`).join('');
   }
 
   function pintarServicios() {
     $('#lista-servicios').innerHTML = servicios.map(s => `
       <article class="tarjeta servicio ${s.destacado ? 'destacado' : ''}">
         ${s.destacado ? '<span class="etiqueta-destacado">Más pedido</span>' : ''}
-        <h3>${s.nombre}</h3>
-        <p class="texto-2" style="margin:0">${s.descripcion}</p>
-        <span class="duracion"><svg class="icono" aria-hidden="true"><use href="#i-reloj"></use></svg>${s.duracionMin} min aprox.</span>
+        <h3>${esc(s.nombre)}</h3>
+        <p class="texto-2" style="margin:0">${esc(s.descripcion)}</p>
+        <span class="duracion"><svg class="icono" aria-hidden="true"><use href="#i-reloj"></use></svg>${esc(s.duracionMin)} min aprox.</span>
         <span class="precio">${Datos.dinero(s.precios[estado.vehiculo])}</span>
-        <button type="button" class="btn ${s.destacado ? 'btn-primario' : 'btn-secundario'}" data-elegir="${s.id}">Elegir</button>
+        <button type="button" class="btn ${s.destacado ? 'btn-primario' : 'btn-secundario'}" data-elegir="${esc(s.id)}">Elegir</button>
       </article>`).join('');
   }
 
@@ -58,19 +59,22 @@
   });
 
   // ---- Formulario de reserva ----
-  $('#f-servicio').innerHTML = servicios.map(s => `<option value="${s.id}">${s.nombre}</option>`).join('');
+  $('#f-servicio').innerHTML = servicios.map(s => `<option value="${esc(s.id)}">${esc(s.nombre)}</option>`).join('');
   $('#f-servicio').value = servicios.find(s => s.destacado)?.id ?? servicios[0].id;
-  $('#f-vehiculo').innerHTML = negocio.tiposVehiculo.map(v => `<option value="${v.id}">${v.nombre}</option>`).join('');
+  $('#f-vehiculo').innerHTML = negocio.tiposVehiculo.map(v => `<option value="${esc(v.id)}">${esc(v.nombre)}</option>`).join('');
   $('#f-vehiculo').value = estado.vehiculo;
   $('#f-fecha').min = Datos.fechaISO();
   $('#f-fecha').value = Datos.fechaISO();
 
-  function pintarHorarios() {
+  // Se consultan las reservas del día elegido cada vez: en la nube cambian mientras el cliente mira.
+  let consulta = 0;
+  async function pintarHorarios() {
     const servicio = servicioPorId($('#f-servicio').value);
-    const libres = Datos.horariosDisponibles({
-      negocio, servicios, reservas: estado.reservas,
-      fecha: $('#f-fecha').value, duracionMin: servicio.duracionMin
-    });
+    const fecha = $('#f-fecha').value;
+    const n = ++consulta;
+    const reservas = fecha ? await Datos.reservas({ desde: fecha, hasta: fecha }).catch(() => []) : [];
+    if (n !== consulta) return; // llegó una consulta más nueva
+    const libres = Datos.horariosDisponibles({ negocio, servicios, reservas, fecha, duracionMin: servicio.duracionMin });
     if (!libres.includes(estado.hora)) estado.hora = null;
     $('#f-horarios').innerHTML = libres.length
       ? libres.map(h => `<button type="button" data-hora="${h}" aria-pressed="${h === estado.hora}">${h}</button>`).join('')
@@ -82,7 +86,7 @@
     const servicio = servicioPorId($('#f-servicio').value);
     const vehiculo = $('#f-vehiculo').value;
     $('#resumen').innerHTML = `
-      <div class="texto-2">${servicio.nombre} · ${nombreVehiculo(vehiculo)}${estado.hora ? ` · ${estado.hora} h` : ''}</div>
+      <div class="texto-2">${esc(servicio.nombre)} · ${esc(nombreVehiculo(vehiculo))}${estado.hora ? ` · ${estado.hora} h` : ''}</div>
       <div class="total">${Datos.dinero(servicio.precios[vehiculo])}</div>`;
   }
 
@@ -91,7 +95,8 @@
     if (!btn) return;
     estado.hora = btn.dataset.hora;
     $('#e-hora').textContent = '';
-    pintarHorarios();
+    $('#f-horarios').querySelectorAll('[data-hora]').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+    pintarResumen();
   });
   $('#f-servicio').addEventListener('change', pintarHorarios);
   $('#f-fecha').addEventListener('change', pintarHorarios);
@@ -100,7 +105,7 @@
     pintarFiltro(); pintarServicios(); pintarResumen();
   });
 
-  const normalizarPatente = (txt) => txt.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const normalizarPatente = Datos.normalizarPatente;
 
   function validar() {
     const reglas = [
@@ -123,23 +128,31 @@
     return !primeroInvalido;
   }
 
-  $('#form-reserva').addEventListener('submit', (e) => {
+  $('#form-reserva').addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!validar()) return;
     const servicio = servicioPorId($('#f-servicio').value);
     const vehiculo = $('#f-vehiculo').value;
+    const boton = $('#form-reserva [type="submit"]');
+    boton.disabled = true;
     try {
-      const reserva = Datos.crearReserva({
-        fecha: $('#f-fecha').value,
+      // Justo antes de confirmar se revisa que la hora siga libre (otro cliente pudo tomarla).
+      const fecha = $('#f-fecha').value;
+      const ocupadas = await Datos.reservas({ desde: fecha, hasta: fecha });
+      if (!Datos.horariosDisponibles({ negocio, servicios, reservas: ocupadas, fecha, duracionMin: servicio.duracionMin }).includes(estado.hora)) {
+        throw new Error('Esa hora se acaba de ocupar. Elige otra, por favor.');
+      }
+      const reserva = await Datos.crearReserva({
+        fecha,
         hora: estado.hora,
         servicioId: servicio.id,
         vehiculo,
         cliente: $('#f-nombre').value.trim(),
-        telefono: $('#f-telefono').value.replace(/\D/g, ''),
+        telefono: telefonoWhatsApp($('#f-telefono').value),
         patente: normalizarPatente($('#f-patente').value),
-        precio: servicio.precios[vehiculo] // se guarda el precio del momento de la reserva
+        precio: servicio.precios[vehiculo], // se guardan el precio y la duración del momento de la reserva
+        duracionMin: servicio.duracionMin
       });
-      estado.reservas.push(reserva);
       mostrarConfirmacion(reserva, servicio);
       $('#form-reserva').reset();
       $('#f-fecha').value = Datos.fechaISO();
@@ -148,8 +161,18 @@
       pintarHorarios();
     } catch (err) {
       $('#e-hora').textContent = err.message;
+      pintarHorarios();
     }
+    boton.disabled = false;
   });
+
+  // Teléfono chileno a formato WhatsApp (569XXXXXXXX), para que el equipo pueda avisar con un toque.
+  function telefonoWhatsApp(txt) {
+    const digitos = txt.replace(/\D/g, '');
+    if (digitos.length === 9) return '56' + digitos;
+    if (digitos.length === 8) return '569' + digitos;
+    return digitos;
+  }
 
   function mostrarConfirmacion(r, servicio) {
     const fecha = new Date(r.fecha + 'T12:00:00').toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -161,8 +184,8 @@
         <svg class="icono" aria-hidden="true"><use href="#i-check"></use></svg>
         <div>
           <strong>¡Reserva confirmada!</strong><br>
-          ${servicio.nombre} · ${fecha}, ${r.hora} h<br>
-          Patente <span class="patente">${r.patente}</span> · Código ${r.id}
+          ${esc(servicio.nombre)} · ${fecha}, ${r.hora} h<br>
+          Patente <span class="patente">${esc(r.patente)}</span> · Código ${esc(r.id)}
         </div>
       </div>
       <a class="btn btn-secundario btn-bloque" style="margin-bottom:12px" target="_blank" rel="noopener"
@@ -177,17 +200,20 @@
     e.preventDefault();
     const patente = normalizarPatente($('#f-buscar-patente').value);
     const hoy = Datos.fechaISO();
-    const todas = await Datos.reservas();
-    const suyas = todas
-      .filter(r => r.patente === patente && r.fecha >= hoy)
-      .sort((a, b) => (a.fecha + a.hora).localeCompare(b.fecha + b.hora));
+    let suyas = [];
+    try {
+      suyas = (await Datos.reservasPorPatente(patente)).filter(r => r.fecha >= hoy);
+    } catch {
+      $('#resultado-estado').innerHTML = '<p class="texto-2" style="margin:0">No pudimos consultar en este momento. Intenta de nuevo.</p>';
+      return;
+    }
 
     $('#resultado-estado').innerHTML = suyas.length
       ? suyas.map(r => `
           <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:10px 0;border-top:1px solid var(--borde)">
-            <span>${servicioPorId(r.servicioId)?.nombre ?? r.servicioId}<br>
+            <span>${esc(servicioPorId(r.servicioId)?.nombre ?? r.servicioId)}<br>
               <span class="texto-2">${r.fecha === hoy ? 'Hoy' : r.fecha} · ${r.hora} h</span></span>
-            <span class="chip ${r.estado}">${Datos.ESTADOS[r.estado]?.texto ?? r.estado}</span>
+            <span class="chip ${esc(r.estado)}">${esc(Datos.ESTADOS[r.estado]?.texto ?? r.estado)}</span>
           </div>`).join('')
       : '<p class="texto-2" style="margin:0">No encontramos reservas activas para esa patente.</p>';
   });

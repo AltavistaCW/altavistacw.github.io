@@ -1,0 +1,5 @@
+[
+  { "uid": "demo-dueno", "nombre": "Dueño (demo)", "email": "dueno@demo.cl", "clave": "demo1234", "rol": "dueno" },
+  { "uid": "demo-pedro", "nombre": "Pedro Vargas", "email": "pedro@demo.cl", "clave": "demo1234", "rol": "trabajador" },
+  { "uid": "demo-luis", "nombre": "Luis Contreras", "email": "luis@demo.cl", "clave": "demo1234", "rol": "trabajador" }
+]

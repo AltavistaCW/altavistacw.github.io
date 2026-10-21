@@ -8,16 +8,41 @@
     "apertura": "09:00",
     "cierre": "19:00",
     "intervaloMin": 30,
-    "diasCerrado": [0],
+    "diasCerrado": [
+      0
+    ],
     "texto": "Lunes a sábado, 09:00 a 19:00"
   },
   "capacidadSimultanea": 2,
   "tiposVehiculo": [
-    { "id": "auto", "nombre": "Auto" },
-    { "id": "suv", "nombre": "SUV" },
-    { "id": "camioneta-1c", "nombre": "Camioneta 1 cabina" },
-    { "id": "camioneta-2c", "nombre": "Camioneta 2 cabinas / Jeep" },
-    { "id": "camioneta-barra", "nombre": "Camioneta con barra" },
-    { "id": "van", "nombre": "Van / Furgón / 3 corridas" }
+    {
+      "id": "auto",
+      "nombre": "Auto"
+    },
+    {
+      "id": "suv",
+      "nombre": "SUV"
+    },
+    {
+      "id": "camioneta-1c",
+      "nombre": "Camioneta 1 cabina"
+    },
+    {
+      "id": "camioneta-2c",
+      "nombre": "Camioneta 2 cabinas / Jeep"
+    },
+    {
+      "id": "camioneta-barra",
+      "nombre": "Camioneta con barra"
+    },
+    {
+      "id": "van",
+      "nombre": "Van / Furgón / 3 corridas"
+    }
+  ],
+  "mediosPago": [
+    "Efectivo",
+    "Transferencia",
+    "Tarjeta"
   ]
 }
