@@ -15,7 +15,8 @@
     { "src": "iconos/icono-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
-    { "name": "Reservar hora", "url": "cliente.html#reservar" },
+    { "name": "Reservar hora", "url": "./" },
+    { "name": "Estado de mi auto", "url": "cliente.html#estado" },
     { "name": "Mi jornada", "url": "trabajador.html" },
     { "name": "Panel del dueño", "url": "dueno.html" }
   ]

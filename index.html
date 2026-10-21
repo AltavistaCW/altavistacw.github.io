@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Alta Vista">
   <title>Alta Vista Carwash</title>
-  <meta name="description" content="Reserva tu lavado, revisa precios y el estado de tu auto.">
+  <meta name="description" content="Reserva tu lavado: elige el día, tu vehículo, el servicio y la hora.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Rubik:wght@400;500;600&display=swap" rel="stylesheet">
@@ -29,17 +29,25 @@
   </header>
 
   <main class="inicio-cuerpo">
-    <a class="btn btn-primario btn-grande" href="cliente.html#reservar">
-      <svg class="icono" aria-hidden="true"><use href="#i-calendario"></use></svg> Reservar hora
-    </a>
-    <p class="desde" id="desde"></p>
+    <!-- Reserva paso a paso: día → vehículo → lavado → hora → datos -->
+    <section class="tarjeta asistente" aria-labelledby="paso-titulo">
+      <div class="asistente-cabecera">
+        <button type="button" class="btn btn-secundario btn-icono" id="atras" aria-label="Volver al paso anterior" hidden>
+          <svg class="icono" aria-hidden="true"><use href="#i-izquierda"></use></svg>
+        </button>
+        <div>
+          <span class="asistente-paso" id="paso-n">Paso 1 de 5</span>
+          <h2 id="paso-titulo" tabindex="-1">¿Qué día quieres lavar tu auto?</h2>
+        </div>
+      </div>
+      <div class="progreso" aria-hidden="true"><div class="progreso-barra" id="progreso"></div></div>
+      <ul class="eleccion" id="eleccion" aria-label="Lo que elegiste"></ul>
+      <div id="paso-contenido" aria-live="polite">
+        <p class="texto-2">Cargando disponibilidad…</p>
+      </div>
+    </section>
 
-    <nav class="accesos" aria-label="Accesos rápidos">
-      <a class="acceso" href="cliente.html#servicios">
-        <span class="acceso-icono"><svg class="icono" aria-hidden="true"><use href="#i-auto"></use></svg></span>
-        <span class="acceso-titulo">Precios</span>
-        <span class="acceso-sub">Según tu vehículo</span>
-      </a>
+    <nav class="accesos tres" aria-label="Accesos rápidos">
       <a class="acceso" href="cliente.html#estado">
         <span class="acceso-icono"><svg class="icono" aria-hidden="true"><use href="#i-buscar"></use></svg></span>
         <span class="acceso-titulo">Mi auto</span>
@@ -63,6 +71,11 @@
       <div><svg class="icono" aria-hidden="true"><use href="#i-telefono"></use></svg><a id="enlace-telefono" data-negocio="telefono" href="#"></a></div>
     </section>
 
+    <p class="aviso" id="aviso-demo" hidden>
+      <svg class="icono" aria-hidden="true"><use href="#i-info"></use></svg>
+      <span>Versión de prueba: tu reserva se guarda solo en este dispositivo.</span>
+    </p>
+
     <a class="acceso-dueno" href="ingreso.html">
       <svg class="icono" aria-hidden="true"><use href="#i-usuarios"></use></svg> Acceso equipo
     </a>
@@ -73,6 +86,6 @@
   <script src="js/firebase-config.js"></script>
   <script src="js/almacen.js"></script>
   <script src="js/datos.js"></script>
-  <script src="js/inicio.js"></script>
+  <script src="js/reserva.js"></script>
 </body>
 </html>

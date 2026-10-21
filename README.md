@@ -4,8 +4,8 @@ App web para una pyme de lavado de autos.
 
 | Pantalla | Archivo | Para quién | Qué hace |
 |---|---|---|---|
-| Inicio | `index.html` | Clientes | Reservar, precios, mi auto, WhatsApp, cómo llegar, abierto/cerrado |
-| Cliente | `cliente.html` | Clientes | Servicios y precios, reserva de hora con disponibilidad, estado por patente |
+| Inicio y reserva | `index.html` | Clientes | Reserva paso a paso: **día (calendario) → vehículo → lavado → hora → datos**; accesos a mi auto, precios, WhatsApp y cómo llegar |
+| Precios y estado | `cliente.html` | Clientes | Servicios y precios por vehículo; estado del auto por patente |
 | Ingreso | `ingreso.html` | Equipo | Correo y clave; cada uno va a su pantalla según su rol |
 | Trabajador | `trabajador.html` | Trabajadores | **Mi jornada** (entrada/salida, tomar autos, terminar lavado, cobrar, auto sin reserva, otra actividad) y **Mi historial** (lavados, cobrado, horas) |
 | Panel maestro | `dueno.html` | Dueño | **Hoy** (agenda, KPIs, equipo en turno) · **Actividad** (registro, caja por medio de pago, horas por persona) · **Equipo** (dar/quitar acceso, roles) · **Precios** (servicios, precios, tipos de vehículo) · **Negocio** (datos, horario, días, capacidad, medios de pago) |
@@ -50,8 +50,8 @@ Plan gratuito (Spark) de Firebase: alcanza de sobra para un local (50.000 lectur
 | Lógica de datos (reservas, lavados, cobros, actividades, sesión) | `js/datos.js` |
 | Motor de guardado (navegador o Firebase) | `js/almacen.js` |
 | Ventanas, mensajes y pestañas compartidas | `js/ui.js` |
-| Cada pantalla | `js/cliente.js`, `js/ingreso.js`, `js/trabajador.js`, `js/dueno.js`, `js/inicio.js` |
-| Archivos para uso sin conexión | `sw.js` (al agregar un archivo, sumarlo a la lista y subir la versión `altavista-v2` → `v3`) |
+| Cada pantalla | `js/reserva.js` (inicio), `js/cliente.js`, `js/ingreso.js`, `js/trabajador.js`, `js/dueno.js` |
+| Archivos para uso sin conexión | `sw.js` (al agregar un archivo, sumarlo a la lista y subir la versión `altavista-v3` → `v4`) |
 
 ## Probar en el computador
 

@@ -4,12 +4,12 @@
  * (precios al día); si no hay, se muestra la última copia guardada.
  * Al agregar archivos nuevos a la app, sumarlos a ARCHIVOS y subir la versión de CACHE.
  */
-const CACHE = 'altavista-v2';
+const CACHE = 'altavista-v3';
 const ARCHIVOS = [
   './', 'index.html', 'cliente.html', 'dueno.html', 'ingreso.html', 'trabajador.html',
   'css/estilos.css',
   'js/iconos.js', 'js/firebase-config.js', 'js/almacen.js', 'js/datos.js', 'js/ui.js',
-  'js/inicio.js', 'js/cliente.js', 'js/dueno.js', 'js/trabajador.js', 'js/ingreso.js', 'js/pwa.js',
+  'js/reserva.js', 'js/cliente.js', 'js/dueno.js', 'js/trabajador.js', 'js/ingreso.js', 'js/pwa.js',
   'data/negocio.json', 'data/servicios.json', 'data/reservas-demo.json', 'data/equipo-demo.json',
   'iconos/icono-192.png'
 ];

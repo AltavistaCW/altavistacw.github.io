@@ -9,8 +9,8 @@
   <link rel="apple-touch-icon" href="iconos/apple-touch-icon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Alta Vista">
-  <title>Reserva tu lavado</title>
-  <meta name="description" content="Servicios, precios y reserva de hora para el lavado de tu auto.">
+  <title>Precios y estado de tu auto</title>
+  <meta name="description" content="Servicios, precios y estado de tu auto.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Rubik:wght@400;500;600&display=swap" rel="stylesheet">
@@ -23,125 +23,45 @@
         <svg class="icono" aria-hidden="true"><use href="#i-gota"></use></svg>
         <span data-negocio="nombre">Lavado</span>
       </a>
-      <a class="btn btn-primario btn-sm" href="#reservar">Reservar</a>
+      <a class="btn btn-primario btn-sm" href="index.html">Reservar</a>
     </div>
   </header>
 
   <main>
-    <!-- Hero -->
-    <section class="hero">
-      <div class="contenedor">
-        <h1 data-negocio="eslogan">Tu auto impecable</h1>
-        <p>Elige el servicio, reserva tu hora y te avisamos cuando tu auto esté listo.</p>
-        <div class="hero-acciones">
-          <a class="btn btn-primario" href="#reservar">
-            <svg class="icono" aria-hidden="true"><use href="#i-calendario"></use></svg> Reservar hora
-          </a>
-          <a class="btn btn-claro" href="#estado">
-            <svg class="icono" aria-hidden="true"><use href="#i-buscar"></use></svg> Ver estado de mi auto
-          </a>
-        </div>
-        <ul class="datos-rapidos">
-          <li><svg class="icono" aria-hidden="true"><use href="#i-reloj"></use></svg><span data-negocio="horario"></span></li>
-          <li><svg class="icono" aria-hidden="true"><use href="#i-ubicacion"></use></svg><span data-negocio="direccion"></span></li>
-          <li><svg class="icono" aria-hidden="true"><use href="#i-telefono"></use></svg><span data-negocio="telefono"></span></li>
-        </ul>
-      </div>
-    </section>
-
-    <!-- Servicios -->
-    <section class="seccion" id="servicios" aria-labelledby="titulo-servicios">
-      <div class="contenedor">
-        <h2 id="titulo-servicios">Servicios y precios</h2>
-        <p class="texto-2">Selecciona tu tipo de vehículo para ver el precio.</p>
-        <div class="segmentado" id="filtro-vehiculo" role="group" aria-label="Tipo de vehículo"></div>
-        <div class="grilla servicios" id="lista-servicios" aria-live="polite"></div>
-      </div>
-    </section>
-
-    <!-- Reserva -->
-    <section class="seccion" id="reservar" aria-labelledby="titulo-reservar">
-      <div class="contenedor">
-        <h2 id="titulo-reservar">Reserva tu hora</h2>
-        <div class="reserva-columnas">
-          <form class="tarjeta" id="form-reserva" novalidate>
-            <div class="fila-2">
-              <div class="campo">
-                <label for="f-servicio">Servicio</label>
-                <select id="f-servicio" required></select>
-              </div>
-              <div class="campo">
-                <label for="f-vehiculo">Tipo de vehículo</label>
-                <select id="f-vehiculo" required></select>
-              </div>
-            </div>
-
-            <div class="campo">
-              <label for="f-fecha">Fecha</label>
-              <input type="date" id="f-fecha" required>
-            </div>
-
-            <fieldset class="campo" style="border:0;padding:0;margin:0 0 16px">
-              <legend style="font-weight:500;margin-bottom:6px">Hora disponible</legend>
-              <div class="horarios" id="f-horarios" aria-live="polite"></div>
-              <span class="error" id="e-hora"></span>
-            </fieldset>
-
-            <div class="campo">
-              <label for="f-nombre">Nombre</label>
-              <input type="text" id="f-nombre" autocomplete="name" required>
-              <span class="error" id="e-nombre"></span>
-            </div>
-            <div class="fila-2">
-              <div class="campo">
-                <label for="f-telefono">Teléfono (WhatsApp)</label>
-                <input type="tel" id="f-telefono" autocomplete="tel" inputmode="tel" placeholder="9 1234 5678" required>
-                <span class="error" id="e-telefono"></span>
-              </div>
-              <div class="campo">
-                <label for="f-patente">Patente</label>
-                <input type="text" id="f-patente" autocapitalize="characters" maxlength="8" placeholder="ABCD12" required>
-                <span class="ayuda">La usarás para consultar el estado.</span>
-                <span class="error" id="e-patente"></span>
-              </div>
-            </div>
-
-            <div class="resumen" id="resumen" aria-live="polite"></div>
-            <button type="submit" class="btn btn-primario btn-bloque">Confirmar reserva</button>
-          </form>
-
-          <aside>
-            <div id="confirmacion" hidden></div>
-            <div class="aviso" id="aviso-demo" hidden>
-              <svg class="icono" aria-hidden="true"><use href="#i-info"></use></svg>
-              <span>Versión de prueba: tu reserva se guarda solo en este dispositivo.</span>
-            </div>
-          </aside>
-        </div>
-      </div>
-    </section>
-
     <!-- Estado -->
     <section class="seccion" id="estado" aria-labelledby="titulo-estado">
       <div class="contenedor">
-        <h2 id="titulo-estado">¿Cómo va mi auto?</h2>
+        <h1 id="titulo-estado" style="font-size:clamp(1.6rem,5vw,2.2rem)">¿Cómo va mi auto?</h1>
         <form class="tarjeta" id="form-estado" style="max-width:560px">
           <div class="campo">
             <label for="f-buscar-patente">Patente</label>
             <input type="text" id="f-buscar-patente" autocapitalize="characters" maxlength="8" placeholder="ABCD12" required>
           </div>
-          <button type="submit" class="btn btn-secundario">
+          <button type="submit" class="btn btn-primario">
             <svg class="icono" aria-hidden="true"><use href="#i-buscar"></use></svg> Consultar
           </button>
           <div id="resultado-estado" aria-live="polite" style="margin-top:16px"></div>
         </form>
       </div>
     </section>
+
+    <!-- Servicios -->
+    <section class="seccion" id="servicios" aria-labelledby="titulo-servicios" style="padding-top:0">
+      <div class="contenedor">
+        <h2 id="titulo-servicios">Servicios y precios</h2>
+        <p class="texto-2">Selecciona tu tipo de vehículo para ver el precio.</p>
+        <div class="segmentado" id="filtro-vehiculo" role="group" aria-label="Tipo de vehículo"></div>
+        <div class="grilla servicios" id="lista-servicios" aria-live="polite"></div>
+        <a class="btn btn-primario btn-grande btn-bloque" href="index.html" style="margin-top:24px;max-width:420px">
+          <svg class="icono" aria-hidden="true"><use href="#i-calendario"></use></svg> Reservar hora
+        </a>
+      </div>
+    </section>
   </main>
 
   <footer>
     <div class="contenedor">
-      <span data-negocio="nombre"></span> · <span data-negocio="direccion"></span>
+      <span data-negocio="nombre"></span> · <span data-negocio="direccion"></span> · <span data-negocio="horario"></span>
     </div>
   </footer>
 

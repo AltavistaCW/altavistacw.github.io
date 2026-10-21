@@ -181,6 +181,7 @@
             ${r.cliente ? `<span>${esc(r.cliente)}</span>` : ''}
             <span><strong>${Datos.dinero(r.precio)}</strong></span>
             ${r.origen === 'local' ? '<span>Sin reserva</span>' : ''}
+            ${r.comentario ? `<span>Nota: ${esc(r.comentario)}</span>` : ''}
           </div>
           ${r.trabajadorNombre || r.cobrado != null ? `<div class="turno-detalle">
             ${r.trabajadorNombre ? `<span>A cargo: <strong>${esc(r.trabajadorNombre)}</strong></span>` : ''}

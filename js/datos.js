@@ -105,7 +105,7 @@ const Datos = (() => {
       Almacen.listar('contactos', [['fecha', '>=', desde], ['fecha', '<=', hasta]])
     ]);
     const porId = Object.fromEntries(contactos.map(c => [c.id, c]));
-    return lista.map(r => ({ ...r, cliente: porId[r.id]?.cliente ?? '', telefono: porId[r.id]?.telefono ?? '' }));
+    return lista.map(r => ({ ...r, cliente: porId[r.id]?.cliente ?? '', telefono: porId[r.id]?.telefono ?? '', comentario: porId[r.id]?.comentario ?? '' }));
   }
 
   async function reservasPorPatente(patente) {
@@ -114,15 +114,15 @@ const Datos = (() => {
   }
 
   // Reserva hecha por un cliente desde la web.
-  async function crearReserva({ cliente, telefono, ...datos }) {
+  async function crearReserva({ cliente, telefono, comentario = '', ...datos }) {
     await listo;
     const id = nuevoId('R');
     const reserva = { ...datos, patente: normalizarPatente(datos.patente), estado: 'pendiente', origen: 'web', creada: new Date().toISOString() };
     await Almacen.lote([
       { coleccion: 'reservas', id, datos: reserva },
-      { coleccion: 'contactos', id, datos: { fecha: reserva.fecha, cliente, telefono } }
+      { coleccion: 'contactos', id, datos: { fecha: reserva.fecha, cliente, telefono, comentario } }
     ]);
-    return { ...reserva, id, cliente, telefono };
+    return { ...reserva, id, cliente, telefono, comentario };
   }
 
   // Auto que llega sin reserva: queda directo "en proceso" a cargo de quien lo registra.

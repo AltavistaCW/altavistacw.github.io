@@ -90,6 +90,7 @@
           ${r.cliente ? `<span>${esc(r.cliente)}</span>` : ''}
           <span><strong>${Datos.dinero(r.precio)}</strong></span>
           ${r.origen === 'local' ? '<span>Sin reserva</span>' : ''}
+            ${r.comentario ? `<span>Nota: ${esc(r.comentario)}</span>` : ''}
         </div>
         <div class="turno-acciones">${acciones}</div>
       </li>`;
