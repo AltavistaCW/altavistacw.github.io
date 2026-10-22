@@ -50,6 +50,12 @@
 
     <!-- ===== Hoy ===== -->
     <section data-panel="hoy" aria-labelledby="titulo-dia">
+      <section class="tarjeta por-confirmar" id="por-confirmar" hidden aria-labelledby="titulo-por-confirmar">
+        <h2 id="titulo-por-confirmar">Por confirmar <span class="chip pendiente" id="n-por-confirmar"></span></h2>
+        <p class="texto-2">Reservas nuevas de clientes. Confírmales por WhatsApp para que sepan que su hora quedó tomada.</p>
+        <ul class="lista-confirmar" id="lista-por-confirmar"></ul>
+      </section>
+
       <h1 id="titulo-dia" class="titulo-dia"></h1>
       <div class="barra-fecha">
         <button type="button" class="btn btn-secundario btn-icono" id="dia-anterior" aria-label="Día anterior">

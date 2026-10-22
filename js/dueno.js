@@ -70,16 +70,50 @@
 
   // ===== Pestaña: Hoy =====
   async function cargarHoy() {
+    const hoyMismo = Datos.fechaISO();
     try {
-      [estado.reservas, estado.actividadesHoy] = await Promise.all([
+      [estado.reservas, estado.actividadesHoy, estado.proximas] = await Promise.all([
         Datos.reservasConContacto({ desde: Datos.sumarDias(estado.fecha, -6), hasta: estado.fecha }),
-        Datos.actividades({ desde: Datos.fechaISO(), hasta: Datos.fechaISO() })
+        Datos.actividades({ desde: hoyMismo, hasta: hoyMismo }),
+        Datos.reservasConContacto({ desde: hoyMismo, hasta: Datos.sumarDias(hoyMismo, 60) })
       ]);
     } catch (err) {
       UI.aviso(UI.mensajeError(err), 'error');
     }
     pintarHoy();
+    pintarPorConfirmar();
   }
+
+  // Reservas nuevas de clientes (de hoy en adelante) que falta confirmar por WhatsApp.
+  function pintarPorConfirmar() {
+    const lista = (estado.proximas ?? []).filter(Datos.porConfirmar);
+    $('#por-confirmar').hidden = !lista.length;
+    $('#n-por-confirmar').textContent = lista.length;
+    document.title = lista.length ? `(${lista.length}) ${TITULOS.hoy}` : TITULOS.hoy;
+    $('#lista-por-confirmar').innerHTML = lista.map(r => `
+      <li>
+        <div class="confirmar-datos">
+          <strong>${esc(UI.textoDia(r.fecha))}, ${esc(r.hora)} h</strong>
+          <span class="texto-2">${esc(r.cliente || 'Sin nombre')} · <span class="patente">${esc(r.patente)}</span> · ${esc(servicioPorId(r.servicioId)?.nombre ?? r.servicioId)}</span>
+        </div>
+        ${UI.botonConfirmar(r, estado.negocio, estado.servicios)}
+      </li>`).join('');
+  }
+
+  // El enlace abre WhatsApp en otra pestaña; aquí solo se marca la reserva como confirmada.
+  $('[data-panel="hoy"]').addEventListener('click', async (e) => {
+    const el = e.target.closest('[data-confirmar]');
+    if (!el) return;
+    const r = [...(estado.proximas ?? []), ...estado.reservas].find(x => x.id === el.dataset.confirmar);
+    if (!r) return;
+    try {
+      await Datos.confirmarReserva(r, usuario);
+      UI.aviso(`Reserva de ${r.patente} confirmada.`);
+    } catch (err) {
+      UI.aviso(UI.mensajeError(err), 'error');
+    }
+    await cargarHoy();
+  });
 
   const delDia = () => estado.reservas.filter(r => r.fecha === estado.fecha);
 
@@ -150,7 +184,8 @@
   function accionesTurno(r) {
     const id = esc(r.id);
     const cancelar = `<button type="button" class="btn btn-peligro btn-sm" data-accion="cancelar" data-id="${id}">Cancelar</button>`;
-    if (r.estado === 'pendiente') return `<button type="button" class="btn btn-primario btn-sm" data-accion="iniciar" data-id="${id}">Iniciar lavado</button>${cancelar}`;
+    const confirmar = Datos.porConfirmar(r) ? UI.botonConfirmar(r, estado.negocio, estado.servicios) : '';
+    if (r.estado === 'pendiente') return `${confirmar}<button type="button" class="btn btn-primario btn-sm" data-accion="iniciar" data-id="${id}">Iniciar lavado</button>${cancelar}`;
     if (r.estado === 'en-proceso') return `<button type="button" class="btn btn-primario btn-sm" data-accion="terminar" data-id="${id}">Marcar listo</button>${cancelar}`;
     if (r.estado === 'listo') {
       const msj = encodeURIComponent(`Hola${r.cliente ? ' ' + r.cliente : ''}, tu vehículo patente ${r.patente} ya está listo para retiro. ¡Gracias por preferir ${estado.negocio.nombre}!`);
@@ -173,7 +208,7 @@
         <li class="tarjeta turno ${esc(r.estado)}">
           <div class="turno-cabecera">
             <span class="turno-hora">${esc(r.hora)}</span>
-            <span class="chip ${esc(r.estado)}">${esc(info.texto)}</span>
+            <span class="chips-turno">${Datos.porConfirmar(r) ? '<span class="chip por-confirmar">Por confirmar</span>' : ''}<span class="chip ${esc(r.estado)}">${esc(info.texto)}</span></span>
           </div>
           <div class="turno-detalle">
             <span><strong>${esc(servicioPorId(r.servicioId)?.nombre ?? r.servicioId)}</strong> · ${esc(nombreVehiculo(r.vehiculo))}</span>

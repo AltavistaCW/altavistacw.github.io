@@ -142,6 +142,10 @@ const Datos = (() => {
   }
 
   async function actualizarReserva(id, cambios) { await listo; await Almacen.actualizar('reservas', id, cambios); }
+
+  // Reservas web que el local aún no confirma al cliente por WhatsApp.
+  const porConfirmar = (r) => r.origen === 'web' && !r.confirmada && r.estado === 'pendiente';
+  const confirmarReserva = (reserva, autor) => actualizarReserva(reserva.id, { confirmada: Date.now(), confirmadaPor: autor.nombre });
   const cambiarEstado = (id, estado) => actualizarReserva(id, { estado });
 
   // Antes de tomar un auto se revisa el estado más reciente: otro trabajador pudo tomarlo recién.
@@ -323,10 +327,12 @@ const Datos = (() => {
 
     // Las reservas demo usan "dia" relativo a hoy (0 = hoy, -1 = ayer) y "trabajador" = posición en equipo-demo.json.
     let n = 0;
-    for (const { dia = 0, trabajador, cliente, telefono, ...r } of reservasDemo) {
+    for (const { dia = 0, trabajador, cliente, telefono, porConfirmar: sinConfirmar, ...r } of reservasDemo) {
       const fecha = sumarDias(hoy, dia);
       const duracionMin = serv.find(s => s.id === r.servicioId)?.duracionMin ?? 30;
-      const reserva = { ...r, fecha, duracionMin, origen: 'web', creada: new Date().toISOString() };
+      // Las de ejemplo quedan confirmadas, salvo las marcadas "porConfirmar" (para mostrar ese aviso en la demo).
+      const reserva = { ...r, fecha, duracionMin, origen: 'web', creada: new Date().toISOString(),
+        confirmada: sinConfirmar ? undefined : marcaTiempo(fecha, '08:00') };
       if (trabajador != null && r.estado !== 'pendiente' && r.estado !== 'cancelada') {
         const p = persona(trabajador);
         Object.assign(reserva, { trabajadorUid: p.uid, trabajadorNombre: p.nombre, inicio: marcaTiempo(fecha, r.hora) });
@@ -384,7 +390,7 @@ const Datos = (() => {
     modo, ESTADOS, TIPOS_ACTIVIDAD, ROLES,
     negocio, servicios, configGuardada, guardarNegocio, guardarServicios, subirConfigInicial,
     reservas, reservasConContacto, reservasPorPatente, crearReserva, registrarAutoSinReserva,
-    actualizarReserva, cambiarEstado, iniciarLavado, terminarLavado, cobrar,
+    actualizarReserva, cambiarEstado, porConfirmar, confirmarReserva, iniciarLavado, terminarLavado, cobrar,
     actividades, registrarActividad, borrarActividad, minutosTrabajados, turnoDeHoy,
     usuarioActual, ingresar, salir, exigirSesion, pantallaDe, recuperarClave,
     equipo, agregarMiembro, actualizarMiembro, reiniciarDemo,

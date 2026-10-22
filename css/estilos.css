@@ -471,6 +471,19 @@ form > .error, .tarjeta > .error { margin-bottom: 12px; font-size: .9rem; }
   .equipo-columnas > .plegable { order: 2; }
 }
 
+
+/* ===== Reservas por confirmar ===== */
+.por-confirmar { border: 2px solid #F59E0B; margin-bottom: 20px; display: grid; gap: 10px; }
+.por-confirmar h2 { font-size: 1.15rem; margin: 0; display: flex; align-items: center; gap: 8px; }
+.por-confirmar p { margin: 0; font-size: .92rem; }
+.lista-confirmar { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.lista-confirmar li { display: grid; gap: 8px; padding-top: 10px; border-top: 1px solid var(--borde); }
+.confirmar-datos { display: grid; gap: 2px; }
+.chip.por-confirmar { background: #FEF3C7; color: #92400E; border: 1px dashed #D97706; margin: 0; }
+.chips-turno { display: inline-flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.btn-whatsapp { background: #15803D; color: #fff; }
+.btn-whatsapp:hover { background: #166534; }
+
 /* ===== Responsive ===== */
 @media (min-width: 640px) {
   .grilla.servicios { grid-template-columns: repeat(2, 1fr); }

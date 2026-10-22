@@ -177,6 +177,32 @@ const UI = (() => {
     return digitos;
   }
 
+  // ---- Confirmación de reservas por WhatsApp ----
+  function mensajeConfirmacion(r, negocio, servicios) {
+    const servicio = servicios.find(s => s.id === r.servicioId)?.nombre ?? '';
+    const vehiculo = negocio.tiposVehiculo.find(v => v.id === r.vehiculo)?.nombre ?? '';
+    const nombre = (r.cliente || '').split(' ')[0];
+    return [
+      `Hola${nombre ? ' ' + nombre : ''}, tu hora en ${negocio.nombre} quedó reservada ✅`,
+      `📅 ${textoDia(r.fecha)}, ${r.hora} h`,
+      `🚗 ${[servicio, vehiculo].filter(Boolean).join(' · ')} · ${Datos.dinero(r.precio)}`,
+      `📍 ${negocio.direccion}`,
+      'Si no puedes venir, avísanos por aquí. ¡Te esperamos!'
+    ].join('\n');
+  }
+
+  // Abre WhatsApp con el mensaje listo; el clic también marca la reserva como confirmada (data-confirmar).
+  function botonConfirmar(r, negocio, servicios) {
+    const id = esc(r.id);
+    if (!r.telefono) {
+      return `<button type="button" class="btn btn-secundario btn-sm" data-confirmar="${id}">
+        <svg class="icono" aria-hidden="true"><use href="#i-check"></use></svg> Marcar confirmada</button>`;
+    }
+    const texto = encodeURIComponent(mensajeConfirmacion(r, negocio, servicios));
+    return `<a class="btn btn-whatsapp btn-sm" data-confirmar="${id}" target="_blank" rel="noopener" href="https://wa.me/${esc(r.telefono)}?text=${texto}">
+      <svg class="icono" aria-hidden="true"><use href="#i-mensaje"></use></svg> Confirmar por WhatsApp</a>`;
+  }
+
   // ---- Lista de actividades agrupada por día ----
   function textoDia(fecha) {
     const hoy = Datos.fechaISO();
@@ -219,5 +245,5 @@ const UI = (() => {
     }).join('');
   }
 
-  return { aviso, mensajeError, prepararCabecera, pestanas, dialogo, cobro, autoSinReserva, otraActividad, telefonoWhatsApp, listaPorDia, textoDia };
+  return { aviso, mensajeError, prepararCabecera, pestanas, dialogo, cobro, autoSinReserva, otraActividad, telefonoWhatsApp, listaPorDia, textoDia, mensajeConfirmacion, botonConfirmar };
 })();

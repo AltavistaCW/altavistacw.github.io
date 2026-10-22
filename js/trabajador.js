@@ -82,7 +82,7 @@
       <li class="tarjeta turno ${esc(r.estado)}">
         <div class="turno-cabecera">
           <span class="turno-hora">${esc(r.hora)}</span>
-          <span class="chip ${esc(r.estado)}">${esc(info.texto)}</span>
+          <span class="chips-turno">${Datos.porConfirmar(r) ? '<span class="chip por-confirmar">Por confirmar</span>' : ''}<span class="chip ${esc(r.estado)}">${esc(info.texto)}</span></span>
         </div>
         <div class="turno-detalle">
           <span class="patente">${esc(r.patente)}</span>
@@ -116,7 +116,7 @@
     const pendientes = estado.reservas.filter(r => r.estado === 'pendiente');
     $('#por-atender').innerHTML = pendientes.length
       ? pendientes.map(r => tarjetaAuto(r,
-          `<button type="button" class="btn btn-primario btn-sm" data-accion="iniciar" data-id="${esc(r.id)}">Iniciar lavado</button>`)).join('')
+          `${Datos.porConfirmar(r) ? UI.botonConfirmar(r, negocio, servicios) : ''}<button type="button" class="btn btn-primario btn-sm" data-accion="iniciar" data-id="${esc(r.id)}">Iniciar lavado</button>`)).join('')
       : '<li class="tarjeta vacio">No quedan reservas pendientes para hoy.</li>';
   }
 
@@ -126,6 +126,13 @@
     pintarTurno();
     pintarAutos();
   }
+
+  // Confirmar por WhatsApp: el enlace abre el chat; aquí se marca la reserva como confirmada.
+  document.querySelector('[data-panel="jornada"]').addEventListener('click', (e) => {
+    const el = e.target.closest('[data-confirmar]');
+    const r = el && estado.reservas.find(x => x.id === el.dataset.confirmar);
+    if (r) ejecutar(null, () => Datos.confirmarReserva(r, usuario), `Reserva de ${r.patente} confirmada.`);
+  });
 
   document.querySelector('[data-panel="jornada"]').addEventListener('click', async (e) => {
     const btn = e.target.closest('button[data-accion]');
