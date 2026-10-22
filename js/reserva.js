@@ -338,6 +338,13 @@
 
   $('#atras').addEventListener('click', () => history.back());
 
+  // Tocar el logo o el nombre vuelve al inicio: calendario, paso 1, arriba de todo.
+  $('#ir-inicio').addEventListener('click', (e) => {
+    e.preventDefault();
+    reiniciar();
+    window.scrollTo({ top: 0 });
+  });
+
   document.querySelector('.asistente').addEventListener('click', (e) => {
     const t = e.target.closest('button');
     if (!t || t.disabled) return;

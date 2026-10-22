@@ -199,7 +199,8 @@ body.inicio { max-width: 480px; margin: 0 auto; min-height: 100vh; }
   padding: calc(24px + env(safe-area-inset-top)) 16px 56px;
   border-radius: 0 0 28px 28px;
 }
-.inicio-marca { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.inicio-marca { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; color: inherit; text-decoration: none; border-radius: var(--radio-sm); }
+a.inicio-marca:active { opacity: .8; }
 .inicio-logo { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 14px; background: rgb(255 255 255 / .12); color: var(--agua); flex-shrink: 0; }
 .inicio-logo svg { width: 28px; height: 28px; }
 .inicio-marca h1 { color: #fff; font-size: 1.5rem; margin: 0; }
