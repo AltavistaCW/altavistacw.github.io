@@ -456,7 +456,7 @@ form > .error, .tarjeta > .error { margin-bottom: 12px; font-size: .9rem; }
     border-top: 1px solid var(--borde); border-bottom: 0; box-shadow: 0 -2px 12px rgb(15 23 42 / .06);
     padding-bottom: env(safe-area-inset-bottom);
   }
-  .pestanas-abajo .contenedor { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; padding: 0 4px; overflow: visible; }
+  .pestanas-abajo .contenedor { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 0; padding: 0 4px; overflow: visible; } /* tantas columnas como secciones */
   .pestanas-abajo a {
     flex-direction: column; justify-content: center; gap: 2px; min-height: 60px; padding: 6px 0;
     font-size: .72rem; border-bottom: 0; border-top: 3px solid transparent;
@@ -485,6 +485,32 @@ form > .error, .tarjeta > .error { margin-bottom: 12px; font-size: .9rem; }
 .chips-turno { display: inline-flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
 .btn-whatsapp { background: #15803D; color: #fff; }
 .btn-whatsapp:hover { background: #166534; }
+
+
+/* ===== Agenda del trabajador ===== */
+.enlace-agenda { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin-top: 8px; color: var(--acento); font-weight: 500; text-decoration: none; }
+.linea-tiempo { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 4px; }
+.franja {
+  display: grid; grid-template-columns: 3.6em 1fr auto; gap: 10px; align-items: center;
+  min-height: 48px; padding: 6px 12px; border-radius: var(--radio-sm);
+  background: var(--tarjeta); border: 1px solid var(--borde); scroll-margin: 140px;
+}
+.franja-hora { font-family: var(--fuente-titulo); font-weight: 600; color: var(--primario); display: grid; line-height: 1.15; }
+.franja-ahora { font: 600 .68rem var(--fuente-cuerpo); color: var(--acento); text-transform: uppercase; letter-spacing: .04em; }
+.franja-autos { display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; }
+.franja-cupo { font-size: .8rem; font-weight: 600; white-space: nowrap; color: #166534; }
+.franja.parcial .franja-cupo { color: #92400E; }
+.franja.llena { background: #FEF2F2; border-color: #FECACA; }
+.franja.llena .franja-cupo { color: #991B1B; }
+.franja.pasada { opacity: .45; }
+.franja.actual { border: 2px solid var(--acento); box-shadow: 0 0 0 3px var(--acento-suave); }
+.auto-franja { font-size: .8rem; padding: 2px 8px; border-radius: 999px; background: #F1F5F9; color: var(--texto); white-space: nowrap; }
+.auto-franja.pendiente { background: #FEF3C7; color: #92400E; }
+.auto-franja.en-proceso { background: #DBEAFE; color: #1E40AF; }
+.auto-franja.sigue { opacity: .55; }
+.alcance { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: var(--radio-sm); margin-bottom: 16px; font-size: .95rem; }
+.alcance.si { background: #DCFCE7; color: #14532D; }
+.alcance.no { background: #FEF3C7; color: #78350F; }
 
 /* ===== Responsive ===== */
 @media (min-width: 640px) {

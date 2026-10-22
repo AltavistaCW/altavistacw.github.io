@@ -1,4 +1,4 @@
-/* Vista del trabajador: "Mi jornada" (registrar lo de hoy) y "Mi historial". */
+/* Vista del trabajador: "Mi jornada" (registrar lo de hoy), "Agenda" (cómo está ocupado el día) y "Mi historial". */
 (async () => {
   const $ = (sel) => document.querySelector(sel);
   const esc = Datos.escapar;
@@ -20,7 +20,10 @@
 
   const servicioPorId = (id) => servicios.find(s => s.id === id);
   const nombreVehiculo = (id) => negocio.tiposVehiculo.find(v => v.id === id)?.nombre ?? id;
-  const estado = { reservas: [], actividades: [], periodo: 'hoy' };
+  const estado = { reservas: [], actividades: [], periodo: 'hoy', agendaFecha: Datos.fechaISO(), agendaReservas: [], pestana: 'jornada' };
+  const servicioCorto = (id) => (servicioPorId(id)?.nombre ?? id).replace(/^Lavado /, '');
+  const primerNombre = (txt) => String(txt).split(' ')[0];
+  const minutosAhora = () => { const a = new Date(); return a.getHours() * 60 + a.getMinutes(); };
 
   async function cargar() {
     const hoy = Datos.fechaISO();
@@ -34,6 +37,7 @@
     }
     pintarJornada();
     pintarHistorial();
+    if (estado.agendaFecha === Datos.fechaISO()) { estado.agendaReservas = estado.reservas; pintarAgenda(); }
   }
 
   // Ejecuta una acción, muestra el resultado y recarga los datos.
@@ -151,7 +155,7 @@
 
   $('#btn-sin-reserva').addEventListener('click', async (e) => {
     const boton = e.currentTarget;
-    const datos = await UI.autoSinReserva(negocio, servicios);
+    const datos = await UI.autoSinReserva(negocio, servicios, revisarAlcance);
     if (datos) ejecutar(boton, () => Datos.registrarAutoSinReserva(usuario, datos), `Lavado iniciado: ${datos.patente}`);
   });
 
@@ -161,7 +165,91 @@
     if (datos) ejecutar(boton, () => Datos.registrarActividad(usuario, { tipo: 'otra', ...datos }), 'Actividad registrada.');
   });
 
-  // ===== Pantalla 2: Mi historial =====
+  // ¿Alcanza a lavarse ahora un auto sin reserva? Mira las reservas y lavados de hoy y la capacidad del local.
+  function revisarAlcance(servicio) {
+    const ahoraMin = minutosAhora();
+    const cap = negocio.capacidadSimultanea;
+    const calcular = (s) => Datos.ocupacionEntre({
+      reservas: estado.reservas, servicios, fecha: Datos.fechaISO(), ahoraMin, desdeMin: ahoraMin, duracionMin: s.duracionMin
+    });
+    const o = calcular(servicio);
+    const despuesCierre = ahoraMin + servicio.duracionMin > Datos.aMinutos(negocio.horario.cierre)
+      ? ` Ojo: terminaría después del cierre (${esc(negocio.horario.cierre)}).` : '';
+    if (o.maximo < cap) {
+      const termina = Datos.aHora(Math.min(ahoraMin + servicio.duracionMin, 1439));
+      const proxima = o.tramos.filter(t => t.reserva.estado === 'pendiente').sort((a, b) => a.ini - b.ini)[0];
+      const extra = proxima ? ` Hay una reserva a las ${esc(proxima.reserva.hora)}, pero queda lugar.` : '';
+      return `<div class="alcance si"><svg class="icono" aria-hidden="true"><use href="#i-check"></use></svg>
+        <span><strong>Alcanza.</strong> Si empiezas ahora, termina cerca de las ${termina}.${extra}${despuesCierre}</span></div>`;
+    }
+    const cortos = servicios.filter(s => s.duracionMin < servicio.duracionMin && calcular(s).maximo < cap);
+    const sugerencia = cortos.length
+      ? ` Con ${cortos.map(s => `${esc(s.nombre)} (${esc(s.duracionMin)} min)`).join(' o ')} sí alcanza.`
+      : ' Mejor ofrécele una hora más tarde (mira la Agenda).';
+    return `<div class="alcance no"><svg class="icono" aria-hidden="true"><use href="#i-info"></use></svg>
+      <span><strong>No alcanza.</strong> A las ${o.momentoLleno} el local estará lleno.${sugerencia}${despuesCierre}</span></div>`;
+  }
+
+  // ===== Pantalla 2: Agenda del día =====
+  async function cargarAgenda() {
+    if (estado.agendaFecha === Datos.fechaISO()) {
+      estado.agendaReservas = estado.reservas;
+    } else {
+      try {
+        estado.agendaReservas = await Datos.reservasConContacto({ desde: estado.agendaFecha, hasta: estado.agendaFecha });
+      } catch (err) {
+        UI.aviso(UI.mensajeError(err), 'error');
+      }
+    }
+    pintarAgenda();
+  }
+
+  // El día en tramos (ej. cada 30 min): qué autos ocupan el local en cada tramo y cuántos lugares quedan.
+  function pintarAgenda() {
+    const f = estado.agendaFecha;
+    const esHoy = f === Datos.fechaISO();
+    $('#agenda-fecha').value = f;
+    $('#titulo-agenda-dia').textContent = `Agenda · ${UI.textoDia(f)}`;
+    const { apertura, cierre, intervaloMin, diasCerrado = [] } = negocio.horario;
+    if (diasCerrado.includes(new Date(f + 'T12:00:00').getDay())) {
+      $('#agenda-resumen').textContent = '';
+      $('#linea-tiempo').innerHTML = '<li class="tarjeta vacio">El local está cerrado este día.</li>';
+      return;
+    }
+    const ahoraMin = minutosAhora();
+    const cap = negocio.capacidadSimultanea;
+    const tramos = Datos.tramosDelDia({ reservas: estado.agendaReservas, servicios, fecha: f, ahoraMin: esHoy ? ahoraMin : null });
+    const filas = [];
+    for (let m = Datos.aMinutos(apertura); m < Datos.aMinutos(cierre); m += intervaloMin) {
+      const fin = m + intervaloMin;
+      const activos = tramos.filter(t => t.ini < fin && t.fin > m).sort((a, b) => a.ini - b.ini);
+      const pasada = esHoy && fin <= ahoraMin;
+      const actual = esHoy && m <= ahoraMin && ahoraMin < fin;
+      const libres = Math.max(0, cap - activos.length);
+      const clase = libres === 0 ? 'llena' : activos.length ? 'parcial' : 'libre';
+      filas.push(`
+        <li class="franja ${clase}${pasada ? ' pasada' : ''}${actual ? ' actual' : ''}"${actual ? ' aria-current="time"' : ''}>
+          <span class="franja-hora">${Datos.aHora(m)}${actual ? '<span class="franja-ahora">Ahora</span>' : ''}</span>
+          <div class="franja-autos">${activos.length ? activos.map(t => {
+            const r = t.reserva;
+            const empieza = t.ini >= m && t.ini < fin; // en las filas siguientes el auto aparece atenuado ("sigue")
+            return `<span class="auto-franja ${esc(r.estado)}${empieza ? '' : ' sigue'}">${esc(r.patente)} · ${esc(servicioCorto(r.servicioId))}${r.trabajadorNombre ? ' · ' + esc(primerNombre(r.trabajadorNombre)) : ''}</span>`;
+          }).join('') : '<span class="texto-2">Libre</span>'}</div>
+          <span class="franja-cupo">${libres === 0 ? 'Lleno' : `${libres} ${libres === 1 ? 'libre' : 'libres'}`}</span>
+        </li>`);
+    }
+    $('#linea-tiempo').innerHTML = filas.join('');
+    const n = estado.agendaReservas.filter(r => r.fecha === f && r.estado !== 'cancelada').length;
+    $('#agenda-resumen').textContent = `${n} ${n === 1 ? 'auto' : 'autos'} este día · caben ${cap} a la vez`;
+  }
+
+  function moverAgenda(dias) { estado.agendaFecha = Datos.sumarDias(estado.agendaFecha, dias); cargarAgenda(); }
+  $('#agenda-anterior').addEventListener('click', () => moverAgenda(-1));
+  $('#agenda-siguiente').addEventListener('click', () => moverAgenda(1));
+  $('#agenda-hoy').addEventListener('click', () => { estado.agendaFecha = Datos.fechaISO(); cargarAgenda(); });
+  $('#agenda-fecha').addEventListener('change', (e) => { if (e.target.value) { estado.agendaFecha = e.target.value; cargarAgenda(); } });
+
+  // ===== Pantalla 3: Mi historial =====
   function desdePeriodo() {
     const hoy = Datos.fechaISO();
     if (estado.periodo === '7') return Datos.sumarDias(hoy, -6);
@@ -190,8 +278,16 @@
     pintarHistorial();
   });
 
-  UI.pestanas((id) => { document.title = id === 'historial' ? 'Mi historial' : 'Mi jornada'; });
+  const TITULOS = { jornada: 'Mi jornada', agenda: 'Agenda', historial: 'Mi historial' };
   await cargar();
+  UI.pestanas(async (id) => {
+    estado.pestana = id;
+    document.title = TITULOS[id];
+    if (id === 'agenda') {
+      await cargarAgenda();
+      $('.franja.actual')?.scrollIntoView({ block: 'center' }); // muestra el momento actual
+    }
+  });
   // Se actualiza solo cada minuto (otros trabajadores pueden tomar autos o llegar reservas nuevas).
   setInterval(() => { if (!document.querySelector('dialog[open]')) cargar(); }, 60000);
 })();

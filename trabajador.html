@@ -29,10 +29,13 @@
     </div>
   </header>
 
-  <nav class="pestanas" aria-label="Secciones">
+  <nav class="pestanas pestanas-abajo" aria-label="Secciones">
     <div class="contenedor">
       <a href="#jornada" data-pestana="jornada">
         <svg class="icono" aria-hidden="true"><use href="#i-auto"></use></svg> Mi jornada
+      </a>
+      <a href="#agenda" data-pestana="agenda">
+        <svg class="icono" aria-hidden="true"><use href="#i-calendario"></use></svg> Agenda
       </a>
       <a href="#historial" data-pestana="historial">
         <svg class="icono" aria-hidden="true"><use href="#i-lista"></use></svg> Mi historial
@@ -62,6 +65,10 @@
         </button>
       </div>
 
+      <a class="enlace-agenda" href="#agenda">
+        <svg class="icono" aria-hidden="true"><use href="#i-calendario"></use></svg> Ver cómo está ocupado el día
+      </a>
+
       <section aria-labelledby="titulo-mis-autos" class="bloque">
         <h2 id="titulo-mis-autos">Mis autos</h2>
         <ul class="agenda" id="mis-autos" aria-live="polite"></ul>
@@ -73,7 +80,25 @@
       </section>
     </section>
 
-    <!-- Pantalla 2: Mi historial -->
+    <!-- Pantalla 2: Agenda del día (para ver si cabe un auto sin reserva) -->
+    <section data-panel="agenda" aria-labelledby="titulo-agenda-dia" hidden>
+      <h1 id="titulo-agenda-dia" class="titulo-panel">Agenda</h1>
+      <div class="barra-fecha">
+        <button type="button" class="btn btn-secundario btn-icono" id="agenda-anterior" aria-label="Día anterior">
+          <svg class="icono" aria-hidden="true"><use href="#i-izquierda"></use></svg>
+        </button>
+        <label class="sr-only" for="agenda-fecha">Fecha</label>
+        <input type="date" id="agenda-fecha">
+        <button type="button" class="btn btn-secundario btn-icono" id="agenda-siguiente" aria-label="Día siguiente">
+          <svg class="icono" aria-hidden="true"><use href="#i-derecha"></use></svg>
+        </button>
+        <button type="button" class="btn btn-secundario btn-sm" id="agenda-hoy">Hoy</button>
+      </div>
+      <p class="texto-2" id="agenda-resumen"></p>
+      <ol class="linea-tiempo" id="linea-tiempo" aria-live="polite"></ol>
+    </section>
+
+    <!-- Pantalla 3: Mi historial -->
     <section data-panel="historial" aria-labelledby="titulo-historial" hidden>
       <h1 id="titulo-historial" class="titulo-panel">Mi historial</h1>
       <div class="segmentado" id="periodo-historial" role="group" aria-label="Período">

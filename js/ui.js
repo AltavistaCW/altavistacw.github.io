@@ -110,7 +110,8 @@ const UI = (() => {
     }).then(d => d && { monto: Number(d.monto), medioPago: d.medioPago });
   }
 
-  function autoSinReserva(negocio, servicios) {
+  // revisar(servicio) opcional: devuelve un aviso HTML de si el lavado alcanza a hacerse ahora.
+  function autoSinReserva(negocio, servicios, revisar) {
     const opcionesServicio = servicios.map(s => `<option value="${esc(s.id)}">${esc(s.nombre)}</option>`).join('');
     const opcionesVehiculo = negocio.tiposVehiculo.map(v => `<option value="${esc(v.id)}">${esc(v.nombre)}</option>`).join('');
     return dialogo({
@@ -126,6 +127,7 @@ const UI = (() => {
           <div class="campo"><label for="d-vehiculo">Vehículo</label><select id="d-vehiculo" name="vehiculo">${opcionesVehiculo}</select></div>
         </div>
         <div class="resumen"><div class="texto-2">Precio de lista</div><div class="total" id="d-precio"></div></div>
+        <div id="d-alcance" aria-live="polite"></div>
         <div class="fila-2">
           <div class="campo"><label for="d-cliente">Nombre del cliente <span class="texto-2">(opcional)</span></label><input id="d-cliente" name="cliente" autocomplete="off"></div>
           <div class="campo"><label for="d-telefono">WhatsApp <span class="texto-2">(opcional)</span></label><input id="d-telefono" name="telefono" type="tel" inputmode="tel" placeholder="9 1234 5678"></div>
@@ -134,6 +136,7 @@ const UI = (() => {
         const pintarPrecio = () => {
           const s = servicios.find(x => x.id === form.servicioId.value);
           form.querySelector('#d-precio').textContent = Datos.dinero(s?.precios[form.vehiculo.value]);
+          if (revisar && s) form.querySelector('#d-alcance').innerHTML = revisar(s);
         };
         form.servicioId.value = servicios.find(s => s.destacado)?.id ?? servicios[0]?.id;
         form.servicioId.addEventListener('change', pintarPrecio);

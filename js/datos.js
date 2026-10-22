@@ -386,8 +386,39 @@ const Datos = (() => {
     return libres;
   }
 
+  // ---- Ocupación del local en un rato ----
+  // Autos que ocupan el local (pendientes y en proceso) entre desdeMin y desdeMin + duracionMin.
+  // ahoraMin (solo hoy): un lavado atrasado sigue ocupando, y una reserva que ya pasó sin llegar deja de contar.
+  function tramosDelDia({ reservas, servicios, fecha, ahoraMin = null }) {
+    return reservas
+      .filter(r => r.fecha === fecha && (r.estado === 'pendiente' || r.estado === 'en-proceso'))
+      .map(r => {
+        const dur = r.duracionMin ?? servicios.find(s => s.id === r.servicioId)?.duracionMin ?? 30;
+        let ini = aMinutos(r.hora);
+        if (r.estado === 'en-proceso' && r.inicio) { const d = new Date(r.inicio); ini = d.getHours() * 60 + d.getMinutes(); }
+        let fin = ini + dur;
+        if (ahoraMin != null && r.estado === 'en-proceso') fin = Math.max(fin, ahoraMin + 5);
+        if (ahoraMin != null && r.estado === 'pendiente' && fin <= ahoraMin) return null;
+        return { reserva: r, ini, fin };
+      })
+      .filter(Boolean);
+  }
+
+  function ocupacionEntre({ desdeMin, duracionMin, ...datos }) {
+    const finMin = desdeMin + duracionMin;
+    const tramos = tramosDelDia(datos).filter(t => t.ini < finMin && t.fin > desdeMin);
+    // El momento más lleno está al inicio o cuando empieza alguna reserva dentro del rato.
+    const momentos = [desdeMin, ...tramos.map(t => t.ini).filter(m => m > desdeMin)];
+    let maximo = 0, momentoLleno = desdeMin;
+    momentos.forEach(m => {
+      const n = tramos.filter(t => t.ini <= m && t.fin > m).length;
+      if (n > maximo) { maximo = n; momentoLleno = m; }
+    });
+    return { maximo, momentoLleno: aHora(momentoLleno), tramos };
+  }
+
   return {
-    modo, ESTADOS, TIPOS_ACTIVIDAD, ROLES,
+    modo, ESTADOS, TIPOS_ACTIVIDAD, ROLES, tramosDelDia, ocupacionEntre, aMinutos, aHora,
     negocio, servicios, configGuardada, guardarNegocio, guardarServicios, subirConfigInicial,
     reservas, reservasConContacto, reservasPorPatente, crearReserva, registrarAutoSinReserva,
     actualizarReserva, cambiarEstado, porConfirmar, confirmarReserva, iniciarLavado, terminarLavado, cobrar,
