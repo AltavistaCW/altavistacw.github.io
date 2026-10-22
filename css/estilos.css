@@ -426,6 +426,51 @@ form > .error, .tarjeta > .error { margin-bottom: 12px; font-size: .9rem; }
 .enlace { background: none; border: 0; padding: 0; color: var(--acento); font: inherit; text-decoration: underline; cursor: pointer; }
 #e-reserva { display: block; }
 
+
+/* ===== Celular primero: menú inferior del panel, cabecera y Hoy compactos ===== */
+.solo-ancho { display: none; }
+@media (max-width: 420px) {
+  .texto-salir { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } /* solo ícono, pero se sigue leyendo "Salir" */
+}
+@media (min-width: 960px) { .solo-angosto { display: none; } }
+.titulo-dia { font-size: 1.35rem; margin: 0 0 10px; }
+.kpis.compactos { gap: 8px; margin-bottom: 20px; }
+.kpis.compactos .kpi { padding: 10px 12px; }
+.kpis.compactos .etiqueta { font-size: .78rem; }
+.kpis.compactos .valor { font-size: 1.3rem; }
+.segmentado.deslizable { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -16px; padding-inline: 16px; }
+.segmentado.deslizable::-webkit-scrollbar { display: none; }
+.segmentado.deslizable button { flex-shrink: 0; }
+.plegable { padding: 0; border: 0; box-shadow: none; background: transparent; }
+.plegable > summary { list-style: none; }
+.plegable > summary::-webkit-details-marker { display: none; }
+.plegable[open] { padding: 16px; border: 1px solid var(--borde); box-shadow: var(--sombra); background: var(--tarjeta); }
+.plegable[open] > summary { margin-bottom: 16px; background: var(--tarjeta); color: var(--primario); border-color: var(--borde); }
+.equipo-columnas { display: grid; gap: 16px; }
+
+@media (max-width: 959px) {
+  .pestanas-abajo {
+    position: fixed; top: auto; bottom: 0; left: 0; right: 0; z-index: 20;
+    border-top: 1px solid var(--borde); border-bottom: 0; box-shadow: 0 -2px 12px rgb(15 23 42 / .06);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pestanas-abajo .contenedor { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; padding: 0 4px; overflow: visible; }
+  .pestanas-abajo a {
+    flex-direction: column; justify-content: center; gap: 2px; min-height: 60px; padding: 6px 0;
+    font-size: .72rem; border-bottom: 0; border-top: 3px solid transparent;
+  }
+  .pestanas-abajo a svg { width: 22px; height: 22px; }
+  .pestanas-abajo a[aria-current="page"] { border-top-color: var(--acento); }
+  body:has(.pestanas-abajo) .seccion-app { padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
+  body:has(.pestanas-abajo) .barra-guardar { bottom: calc(60px + env(safe-area-inset-bottom)); }
+  body:has(.pestanas-abajo) .toast { bottom: calc(76px + env(safe-area-inset-bottom)); }
+}
+@media (min-width: 960px) {
+  .solo-ancho { display: inline; }
+  .equipo-columnas { grid-template-columns: 2fr 1fr; align-items: start; }
+  .equipo-columnas > .plegable { order: 2; }
+}
+
 /* ===== Responsive ===== */
 @media (min-width: 640px) {
   .grilla.servicios { grid-template-columns: repeat(2, 1fr); }

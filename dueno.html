@@ -21,25 +21,27 @@
     <div class="contenedor">
       <a class="marca" href="index.html">
         <svg class="icono" aria-hidden="true"><use href="#i-gota"></use></svg>
-        <span><span data-negocio="nombre">Lavado</span> · Panel</span>
+        <span data-negocio="nombre">Lavado</span>
       </a>
       <div class="cabecera-usuario">
         <span class="cabecera-nombre" data-usuario="nombre"></span>
+        <a class="btn btn-claro btn-sm" href="index.html" target="_blank" rel="noopener" title="Ver como cliente">
+          <svg class="icono" aria-hidden="true"><use href="#i-ojo"></use></svg><span class="solo-ancho">Ver como cliente</span><span class="sr-only solo-angosto">Ver como cliente</span><span class="sr-only"> (se abre en otra pestaña)</span>
+        </a>
         <button type="button" class="btn btn-claro btn-sm" id="salir">
-          <svg class="icono" aria-hidden="true"><use href="#i-salir"></use></svg> Salir
+          <svg class="icono" aria-hidden="true"><use href="#i-salir"></use></svg><span class="texto-salir">Salir</span>
         </button>
       </div>
     </div>
   </header>
 
-  <nav class="pestanas" aria-label="Secciones del panel">
+  <nav class="pestanas pestanas-abajo" aria-label="Secciones del panel">
     <div class="contenedor">
       <a href="#hoy" data-pestana="hoy"><svg class="icono" aria-hidden="true"><use href="#i-calendario"></use></svg> Hoy</a>
       <a href="#actividad" data-pestana="actividad"><svg class="icono" aria-hidden="true"><use href="#i-lista"></use></svg> Actividad</a>
       <a href="#equipo" data-pestana="equipo"><svg class="icono" aria-hidden="true"><use href="#i-usuarios"></use></svg> Equipo</a>
       <a href="#precios" data-pestana="precios"><svg class="icono" aria-hidden="true"><use href="#i-dinero"></use></svg> Precios</a>
       <a href="#negocio" data-pestana="negocio"><svg class="icono" aria-hidden="true"><use href="#i-reloj"></use></svg> Negocio</a>
-      <a href="index.html" target="_blank" rel="noopener" class="pestana-externa"><svg class="icono" aria-hidden="true"><use href="#i-usuario"></use></svg> Ver como cliente<span class="sr-only"> (se abre en otra pestaña)</span></a>
     </div>
   </nav>
 
@@ -48,6 +50,7 @@
 
     <!-- ===== Hoy ===== -->
     <section data-panel="hoy" aria-labelledby="titulo-dia">
+      <h1 id="titulo-dia" class="titulo-dia"></h1>
       <div class="barra-fecha">
         <button type="button" class="btn btn-secundario btn-icono" id="dia-anterior" aria-label="Día anterior">
           <svg class="icono" aria-hidden="true"><use href="#i-izquierda"></use></svg>
@@ -58,15 +61,14 @@
           <svg class="icono" aria-hidden="true"><use href="#i-derecha"></use></svg>
         </button>
         <button type="button" class="btn btn-secundario btn-sm" id="ir-hoy">Hoy</button>
-        <h1 id="titulo-dia" style="font-size:1.4rem;margin:0 0 0 4px"></h1>
       </div>
 
-      <section class="kpis cuatro" aria-label="Indicadores del día" id="kpis"></section>
+      <section class="kpis cuatro compactos" aria-label="Indicadores del día" id="kpis"></section>
 
       <div class="panel-columnas">
         <section aria-labelledby="titulo-agenda">
           <h2 id="titulo-agenda">Agenda</h2>
-          <div class="segmentado" id="filtro-estado" role="group" aria-label="Filtrar por estado"></div>
+          <div class="segmentado deslizable" id="filtro-estado" role="group" aria-label="Filtrar por estado"></div>
           <ul class="agenda" id="agenda" aria-live="polite"></ul>
         </section>
 
@@ -125,10 +127,12 @@
     <section data-panel="equipo" aria-labelledby="titulo-equipo" hidden>
       <h1 id="titulo-equipo" class="titulo-panel">Equipo</h1>
       <p class="texto-2">Quién puede usar la app. Cada trabajador entra con su correo y clave y ve dos pantallas: <strong>Mi jornada</strong> y <strong>Mi historial</strong>.</p>
-      <div class="panel-columnas">
-        <ul class="agenda" id="lista-equipo" aria-live="polite"></ul>
-        <form class="tarjeta" id="form-miembro" novalidate aria-labelledby="titulo-agregar">
-          <h2 id="titulo-agregar" style="font-size:1.2rem">Dar acceso a una persona</h2>
+      <div class="panel-columnas equipo-columnas">
+        <details class="tarjeta plegable" id="plegable-miembro">
+          <summary class="btn btn-primario btn-bloque">
+            <svg class="icono" aria-hidden="true"><use href="#i-mas"></use></svg> Dar acceso a una persona
+          </summary>
+        <form id="form-miembro" novalidate aria-label="Dar acceso a una persona">
           <div class="campo">
             <label for="m-nombre">Nombre</label>
             <input id="m-nombre" name="nombre" autocomplete="off" required>
@@ -156,6 +160,8 @@
           </button>
           <div id="resultado-miembro" aria-live="polite"></div>
         </form>
+        </details>
+        <ul class="agenda" id="lista-equipo" aria-live="polite"></ul>
       </div>
     </section>
 
