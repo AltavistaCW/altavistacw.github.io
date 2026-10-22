@@ -1,4 +1,5 @@
 {
+  "id": "./",
   "name": "Alta Vista Carwash",
   "short_name": "Alta Vista",
   "description": "Reserva tu lavado, revisa precios y el estado de tu auto.",
@@ -16,8 +17,6 @@
   ],
   "shortcuts": [
     { "name": "Reservar hora", "url": "./" },
-    { "name": "Estado de mi auto", "url": "cliente.html#estado" },
-    { "name": "Mi jornada", "url": "trabajador.html" },
-    { "name": "Panel del dueño", "url": "dueno.html" }
+    { "name": "Estado de mi auto", "url": "cliente.html#estado" }
   ]
 }
