@@ -256,7 +256,9 @@
     const r = estado.reserva;
     const s = servicioActual();
     const fecha = textoFecha(r.fecha);
-    const texto = encodeURIComponent(`Hola, reservé ${s.nombre} para el ${fecha} a las ${r.hora}. Patente ${r.patente}. Código ${r.id}.`);
+    // 56912345678 → +56 9 1234 5678, para que el cliente reconozca su número
+    const numero = /^569\d{8}$/.test(r.telefono)
+      ? `+56 9 ${r.telefono.slice(3, 7)} ${r.telefono.slice(7)}` : r.telefono;
     contenido(`
       <div class="aviso exito confirmacion" role="status">
         <svg class="icono" aria-hidden="true"><use href="#i-check"></use></svg>
@@ -268,11 +270,12 @@
           <strong>${Datos.dinero(r.precio)}</strong>
         </div>
       </div>
-      <p class="texto-2">${esc(negocio.direccion)}. Si no puedes venir, avísanos por WhatsApp.</p>
+      <div class="aviso-whatsapp">
+        <svg class="icono" aria-hidden="true"><use href="#i-mensaje"></use></svg>
+        <span>Te confirmaremos por WhatsApp al <strong>${esc(numero)}</strong>.</span>
+      </div>
+      <p class="texto-2">Dirección: ${esc(negocio.direccion)}</p>
       <div class="grilla">
-        <a class="btn btn-primario btn-bloque" target="_blank" rel="noopener" href="https://wa.me/${esc(negocio.whatsapp)}?text=${texto}">
-          <svg class="icono" aria-hidden="true"><use href="#i-mensaje"></use></svg> Avisar por WhatsApp
-        </a>
         <a class="btn btn-secundario btn-bloque" href="cliente.html?patente=${encodeURIComponent(r.patente)}#estado">
           <svg class="icono" aria-hidden="true"><use href="#i-buscar"></use></svg> Ver el estado de mi auto
         </a>
@@ -302,8 +305,8 @@
     const p = estado.paso;
     const final = p === CONFIRMADA;
     $('#atras').hidden = p === 0 || final;
-    $('#paso-n').textContent = final ? '¡Reserva lista!' : `Paso ${p + 1} de ${TITULOS.length}`;
-    $('#paso-titulo').textContent = final ? 'Reserva confirmada' : TITULOS[p];
+    $('#paso-n').textContent = final ? 'Listo' : `Paso ${p + 1} de ${TITULOS.length}`;
+    $('#paso-titulo').textContent = final ? '¡Hora reservada!' : TITULOS[p];
     $('#progreso').style.width = `${final ? 100 : ((p + 1) / TITULOS.length) * 100}%`;
     pintarEleccion();
     PINTORES[p]();

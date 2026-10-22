@@ -423,6 +423,7 @@ form > .error, .tarjeta > .error { margin-bottom: 12px; font-size: .9rem; }
 .opcion-servicio .duracion { display: flex; align-items: center; gap: 6px; color: var(--texto-2); font-size: .88rem; }
 .grupo-horas { font-size: .95rem; color: var(--texto-2); margin: 4px 0 8px; }
 .confirmacion { line-height: 1.6; }
+.aviso-whatsapp { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: var(--radio-sm); background: var(--acento-suave); color: #075985; }
 .enlace { background: none; border: 0; padding: 0; color: var(--acento); font: inherit; text-decoration: underline; cursor: pointer; }
 #e-reserva { display: block; }
 
