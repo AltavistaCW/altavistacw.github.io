@@ -20,7 +20,8 @@
   document.title = negocio.nombre;
   $('#enlace-telefono').href = `tel:${negocio.telefono.replace(/\s/g, '')}`;
   $('#acceso-whatsapp').href = `https://wa.me/${negocio.whatsapp}?text=${encodeURIComponent(`Hola ${negocio.nombre}, quisiera consultar por un lavado.`)}`;
-  $('#acceso-mapa').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${negocio.nombre} ${negocio.direccion}`)}`;
+  // Solo la dirección: con el nombre del local, Google Maps a veces no encuentra el punto exacto.
+  $('#acceso-mapa').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(negocio.direccion)}`;
   $('#aviso-demo').hidden = Datos.modo !== 'demo';
 
   const aMin = (h) => { const [hh, mm] = h.split(':').map(Number); return hh * 60 + mm; };
