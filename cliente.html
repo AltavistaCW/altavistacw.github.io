@@ -35,7 +35,8 @@
         <form class="tarjeta" id="form-estado" style="max-width:560px">
           <div class="campo">
             <label for="f-buscar-patente">Patente</label>
-            <input type="text" id="f-buscar-patente" autocapitalize="characters" maxlength="8" placeholder="ABCD12" required>
+            <input type="text" id="f-buscar-patente" autocapitalize="characters" maxlength="8" placeholder="KJTR34" required>
+            <span class="ayuda">La misma que escribiste al reservar.</span>
           </div>
           <button type="submit" class="btn btn-primario">
             <svg class="icono" aria-hidden="true"><use href="#i-buscar"></use></svg> Consultar
@@ -61,7 +62,8 @@
 
   <footer>
     <div class="contenedor">
-      <span data-negocio="nombre"></span> · <span data-negocio="direccion"></span> · <span data-negocio="horario"></span>
+      <span data-negocio="nombre"></span> · <span data-negocio="direccion"></span><br>
+      <span data-negocio="horario"></span> · <a id="pie-telefono" data-negocio="telefono" href="#"></a>
     </div>
   </footer>
 
@@ -70,6 +72,7 @@
   <script src="js/firebase-config.js"></script>
   <script src="js/almacen.js"></script>
   <script src="js/datos.js"></script>
+  <script src="js/ui.js"></script>
   <script src="js/cliente.js"></script>
 </body>
 </html>

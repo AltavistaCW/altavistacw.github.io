@@ -24,7 +24,7 @@
         <span data-usuario="nombre">Trabajador</span>
       </span>
       <button type="button" class="btn btn-claro btn-sm" id="salir">
-        <svg class="icono" aria-hidden="true"><use href="#i-salir"></use></svg> Salir
+        <svg class="icono" aria-hidden="true"><use href="#i-salir"></use></svg><span class="texto-salir">Salir</span>
       </button>
     </div>
   </header>
@@ -51,12 +51,25 @@
 
     <!-- Pantalla 1: Mi jornada -->
     <section data-panel="jornada" aria-labelledby="titulo-jornada">
-      <h1 id="titulo-jornada" class="titulo-panel">Mi jornada</h1>
-      <p class="texto-2" id="fecha-hoy"></p>
+      <div class="jornada-cabecera">
+        <h1 id="titulo-jornada" class="titulo-panel">Mi jornada</h1>
+        <span class="texto-2" id="fecha-hoy"></span>
+      </div>
 
       <div class="tarjeta tarjeta-turno" id="turno" aria-live="polite"></div>
 
-      <div class="acciones-rapidas">
+      <section aria-labelledby="titulo-mis-autos" class="bloque">
+        <h2 id="titulo-mis-autos">Mis autos</h2>
+        <ul class="agenda" id="mis-autos" aria-live="polite"></ul>
+      </section>
+
+      <section aria-labelledby="titulo-listos" class="bloque" id="bloque-listos" hidden>
+        <h2 id="titulo-listos">Listos para entregar</h2>
+        <p class="texto-2 subtitulo">Autos que terminó otro compañero. Si llega el cliente, puedes cobrar y entregar tú.</p>
+        <ul class="agenda" id="listos-otros" aria-live="polite"></ul>
+      </section>
+
+      <div class="acciones-rapidas bloque">
         <button type="button" class="btn btn-primario" id="btn-sin-reserva">
           <svg class="icono" aria-hidden="true"><use href="#i-mas"></use></svg> Auto sin reserva
         </button>
@@ -64,15 +77,9 @@
           <svg class="icono" aria-hidden="true"><use href="#i-lista"></use></svg> Otra actividad
         </button>
       </div>
-
       <a class="enlace-agenda" href="#agenda">
         <svg class="icono" aria-hidden="true"><use href="#i-calendario"></use></svg> Ver cómo está ocupado el día
       </a>
-
-      <section aria-labelledby="titulo-mis-autos" class="bloque">
-        <h2 id="titulo-mis-autos">Mis autos</h2>
-        <ul class="agenda" id="mis-autos" aria-live="polite"></ul>
-      </section>
 
       <section aria-labelledby="titulo-por-atender" class="bloque">
         <h2 id="titulo-por-atender">Por atender hoy</h2>
@@ -95,6 +102,11 @@
         <button type="button" class="btn btn-secundario btn-sm" id="agenda-hoy">Hoy</button>
       </div>
       <p class="texto-2" id="agenda-resumen"></p>
+      <p class="leyenda" aria-hidden="true">
+        <span class="auto-franja pendiente">Reservado</span>
+        <span class="auto-franja en-proceso">Lavándose</span>
+        <span class="auto-franja hecho">Ya lavado</span>
+      </p>
       <ol class="linea-tiempo" id="linea-tiempo" aria-live="polite"></ol>
     </section>
 

@@ -50,12 +50,6 @@
 
     <!-- ===== Hoy ===== -->
     <section data-panel="hoy" aria-labelledby="titulo-dia">
-      <section class="tarjeta por-confirmar" id="por-confirmar" hidden aria-labelledby="titulo-por-confirmar">
-        <h2 id="titulo-por-confirmar">Por confirmar <span class="chip pendiente" id="n-por-confirmar"></span></h2>
-        <p class="texto-2">Reservas nuevas de clientes. Confírmales por WhatsApp para que sepan que su hora quedó tomada.</p>
-        <ul class="lista-confirmar" id="lista-por-confirmar"></ul>
-      </section>
-
       <h1 id="titulo-dia" class="titulo-dia"></h1>
       <div class="barra-fecha">
         <button type="button" class="btn btn-secundario btn-icono" id="dia-anterior" aria-label="Día anterior">
@@ -70,6 +64,12 @@
       </div>
 
       <section class="kpis cuatro compactos" aria-label="Indicadores del día" id="kpis"></section>
+
+      <section class="tarjeta por-confirmar" id="por-confirmar" hidden aria-labelledby="titulo-por-confirmar">
+        <h2 id="titulo-por-confirmar">Por confirmar <span class="chip pendiente" id="n-por-confirmar"></span></h2>
+        <p class="texto-2">Reservas nuevas de clientes. Confírmales por WhatsApp para que sepan que su hora quedó tomada.</p>
+        <ul class="lista-confirmar" id="lista-por-confirmar"></ul>
+      </section>
 
       <div class="panel-columnas">
         <section aria-labelledby="titulo-agenda">
@@ -102,6 +102,12 @@
     <!-- ===== Actividad del equipo ===== -->
     <section data-panel="actividad" aria-labelledby="titulo-actividad" hidden>
       <h1 id="titulo-actividad" class="titulo-panel">Actividad del equipo</h1>
+      <div class="segmentado deslizable" id="atajos-periodo" role="group" aria-label="Período">
+        <button type="button" data-atajo="hoy" aria-pressed="true">Hoy</button>
+        <button type="button" data-atajo="ayer" aria-pressed="false">Ayer</button>
+        <button type="button" data-atajo="semana" aria-pressed="false">Últimos 7 días</button>
+        <button type="button" data-atajo="mes" aria-pressed="false">Este mes</button>
+      </div>
       <form class="tarjeta filtros" id="filtros-actividad">
         <div class="campo"><label for="a-desde">Desde</label><input type="date" id="a-desde" name="desde"></div>
         <div class="campo"><label for="a-hasta">Hasta</label><input type="date" id="a-hasta" name="hasta"></div>
@@ -132,7 +138,7 @@
     <!-- ===== Equipo ===== -->
     <section data-panel="equipo" aria-labelledby="titulo-equipo" hidden>
       <h1 id="titulo-equipo" class="titulo-panel">Equipo</h1>
-      <p class="texto-2">Quién puede usar la app. Cada trabajador entra con su correo y clave y ve dos pantallas: <strong>Mi jornada</strong> y <strong>Mi historial</strong>.</p>
+      <p class="texto-2">Quién puede usar la app. Cada trabajador entra con su correo y clave y ve tres pantallas: <strong>Mi jornada</strong>, <strong>Agenda</strong> y <strong>Mi historial</strong>.</p>
       <div class="panel-columnas equipo-columnas">
         <details class="tarjeta plegable" id="plegable-miembro">
           <summary class="btn btn-primario btn-bloque">
@@ -174,9 +180,11 @@
     <!-- ===== Servicios y precios ===== -->
     <section data-panel="precios" aria-labelledby="titulo-precios" hidden>
       <h1 id="titulo-precios" class="titulo-panel">Servicios y precios</h1>
-      <p class="texto-2">Los cambios se ven al instante en la página de reservas. Las reservas ya hechas mantienen su precio.</p>
+      <p class="texto-2">Los cambios se ven al instante en la página de reservas. Las reservas ya hechas mantienen su precio.
+        <a href="index.html" target="_blank" rel="noopener">Ver cómo lo ven los clientes</a></p>
       <form id="form-precios" novalidate>
         <div class="grilla" id="editor-servicios"></div>
+        <div id="servicios-ocultos"></div>
         <button type="button" class="btn btn-secundario" id="agregar-servicio" style="margin:16px 0 24px">
           <svg class="icono" aria-hidden="true"><use href="#i-mas"></use></svg> Agregar servicio
         </button>
@@ -184,6 +192,7 @@
         <section class="tarjeta" aria-labelledby="titulo-vehiculos">
           <h2 id="titulo-vehiculos" style="font-size:1.2rem">Tipos de vehículo</h2>
           <div id="editor-vehiculos" class="grilla"></div>
+          <div id="vehiculos-ocultos"></div>
           <button type="button" class="btn btn-secundario btn-sm" id="agregar-vehiculo" style="margin-top:12px">
             <svg class="icono" aria-hidden="true"><use href="#i-mas"></use></svg> Agregar tipo de vehículo
           </button>
@@ -223,13 +232,10 @@
 
           <section class="tarjeta" aria-labelledby="titulo-horario">
             <h2 id="titulo-horario" style="font-size:1.2rem">Horario y capacidad</h2>
-            <div class="fila-2">
-              <div class="campo"><label for="n-apertura">Abre</label><input id="n-apertura" name="apertura" type="time" required></div>
-              <div class="campo"><label for="n-cierre">Cierra</label><input id="n-cierre" name="cierre" type="time" required></div>
-            </div>
-            <fieldset class="campo opciones">
-              <legend>Días abiertos</legend>
-              <div class="dias" id="n-dias"></div>
+            <fieldset class="campo horario-dias">
+              <legend>Horario de cada día</legend>
+              <div id="n-horario-dias"></div>
+              <span class="ayuda">Desmarca los días que no abres. Cada día puede tener su propio horario.</span>
             </fieldset>
             <div class="fila-2">
               <div class="campo">
@@ -248,8 +254,9 @@
             <div class="campo">
               <label for="n-texto">Horario como lo ven los clientes</label>
               <input id="n-texto" name="texto" required>
-              <button type="button" class="btn btn-secundario btn-sm" id="generar-texto" style="align-self:flex-start">Escribirlo según el horario</button>
+              <span class="ayuda">Se escribe solo al cambiar el horario. Puedes ajustarlo si quieres.</span>
             </div>
+            <p class="texto-2"><a href="index.html" target="_blank" rel="noopener">Ver cómo lo ven los clientes</a></p>
           </section>
         </div>
 

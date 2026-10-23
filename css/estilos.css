@@ -26,7 +26,7 @@ html { scroll-behavior: smooth; scroll-padding-top: 80px; }
 body {
   margin: 0;
   font-family: var(--fuente-cuerpo);
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 1.5;
   color: var(--texto);
   background: var(--fondo);
@@ -465,7 +465,6 @@ form > .error, .tarjeta > .error { margin-bottom: 12px; font-size: .9rem; }
   .pestanas-abajo a[aria-current="page"] { border-top-color: var(--acento); }
   body:has(.pestanas-abajo) .seccion-app { padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
   body:has(.pestanas-abajo) .barra-guardar { bottom: calc(60px + env(safe-area-inset-bottom)); }
-  body:has(.pestanas-abajo) .toast { bottom: calc(76px + env(safe-area-inset-bottom)); }
 }
 @media (min-width: 960px) {
   .solo-ancho { display: inline; }
@@ -511,6 +510,96 @@ form > .error, .tarjeta > .error { margin-bottom: 12px; font-size: .9rem; }
 .alcance { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: var(--radio-sm); margin-bottom: 16px; font-size: .95rem; }
 .alcance.si { background: #DCFCE7; color: #14532D; }
 .alcance.no { background: #FEF3C7; color: #78350F; }
+
+
+/* ===== Mejoras tras la prueba con usuarios (letra, botones, piezas nuevas) ===== */
+/* Formularios: los círculos y casillas no deben estirarse como un campo de texto */
+.campo input[type="radio"], .campo input[type="checkbox"] { width: auto; min-height: 0; padding: 0; }
+.opcion input[type="radio"] { width: 20px; height: 20px; flex-shrink: 0; }
+
+/* Mensaje flotante arriba (no tapa la barra de guardar ni el menú inferior), con botón opcional */
+.toast {
+  top: calc(72px + env(safe-area-inset-top)); bottom: auto;
+  display: flex; align-items: center; gap: 12px; width: max-content; transform: translate(-50%, -12px);
+}
+.toast.visible { transform: translate(-50%, 0); pointer-events: auto; }
+.toast-accion {
+  flex-shrink: 0; min-height: 40px; padding: 6px 14px; border-radius: 8px; border: 1px solid rgb(255 255 255 / .5);
+  background: transparent; color: #fff; font: 600 .95rem var(--fuente-cuerpo); cursor: pointer;
+}
+
+/* Botones extra */
+.btn-peligro-lleno { background: var(--error); color: #fff; }
+.btn-peligro-lleno:hover { background: #B91C1C; }
+.btn-claro-gris { background: transparent; color: var(--texto-2); border-color: transparent; }
+.btn-volver { min-height: 44px; padding: 6px 12px; gap: 4px; flex-shrink: 0; }
+.menu-opciones { display: grid; gap: 10px; }
+.menu-opciones h2 { margin-bottom: 4px; }
+.dialogo-error:empty { display: none; }
+.dialogo-error { margin: 0 0 8px; }
+
+/* Chips y notas de reservas */
+.chip { font-size: .85rem; }
+.chip.atrasado { background: #FEE2E2; color: #991B1B; }
+.nota-cliente { margin: 0; padding: 8px 12px; border-radius: var(--radio-sm); background: #FEF9C3; color: #713F12; font-size: .95rem; }
+.subtitulo { margin: -4px 0 12px; font-size: .95rem; }
+
+/* Trabajador: botones grandes y separados (manos mojadas o con guantes) */
+.acciones-grandes { gap: 10px; }
+.acciones-grandes .btn { flex: 1 1 calc(50% - 5px); min-height: 52px; }
+.jornada-cabecera { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-bottom: 12px; }
+.jornada-cabecera .titulo-panel { margin: 0; }
+.tarjeta-turno { padding: 12px 16px; margin: 0 0 4px; gap: 10px; }
+.aviso-demo { margin-bottom: 16px; padding: 10px 14px; font-size: .88rem; }
+
+/* Agenda: autos ya lavados y leyenda */
+.auto-franja.hecho { background: #E2E8F0; color: #475569; text-decoration: line-through; text-decoration-color: rgb(71 85 105 / .4); }
+.leyenda { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 8px; }
+.leyenda .auto-franja { text-decoration: none; }
+
+/* Inicio del cliente */
+.accesos .acceso { min-height: 96px; }
+.acceso-sub { font-size: .85rem; overflow-wrap: anywhere; }
+.asistente-paso { font-size: .85rem; }
+.bienvenida { margin: 0; font-size: .98rem; }
+.eleccion-caja { display: grid; gap: 6px; }
+.eleccion-titulo { font-size: .88rem; color: var(--texto-2); }
+.eleccion button { min-height: 40px; font-size: .92rem; }
+.mi-proxima { display: flex; gap: 12px; align-items: center; padding: 14px 16px; text-decoration: none; color: var(--texto); border: 2px solid var(--acento); }
+.mi-proxima svg { color: var(--acento); width: 26px; height: 26px; }
+.dia { min-height: 52px; }
+.dia-etq { font-size: .66rem; font-weight: 600; }
+.dia[aria-disabled="true"] { cursor: help; color: #94A3B8; background: transparent; border-color: transparent; }
+.dia.lleno[aria-disabled="true"], .dia.cerrado[aria-disabled="true"] { background: #F8FAFC; border-color: #F1F5F9; }
+.aviso-dia { margin: 8px 0 0; padding: 10px 12px; border-radius: var(--radio-sm); background: #FEF3C7; color: #78350F; font-size: .95rem; }
+.opcion-desc { color: var(--texto-2); font-size: .95rem; }
+.datos-utiles { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.datos-utiles li { display: flex; gap: 8px; align-items: flex-start; }
+.datos-utiles svg { color: var(--acento); margin-top: 2px; }
+.nota-cambio { font-size: .92rem; margin: 0; }
+.estado-local:not(.abierto) { background: rgb(255 255 255 / .14); color: #E2E8F0; }
+
+/* Mi auto: estado en una frase grande */
+.estado-auto { display: grid; gap: 4px; padding: 14px 16px; border-radius: var(--radio-sm); margin-bottom: 10px; border-left: 6px solid #CBD5E1; background: #F8FAFC; }
+.estado-auto-titulo { font-family: var(--fuente-titulo); font-size: 1.25rem; color: var(--primario); }
+.estado-auto.pendiente { border-left-color: #D97706; background: #FFFBEB; }
+.estado-auto.en-proceso { border-left-color: #2563EB; background: #EFF6FF; }
+.estado-auto.listo { border-left-color: #16A34A; background: #F0FDF4; }
+.estado-auto.cancelada { border-left-color: #DC2626; background: #FEF2F2; }
+
+/* Panel: horario por día, ocultos, tabla */
+.horario-dias { border: 0; padding: 0; }
+/* Cada día en dos líneas (día arriba, horas abajo) para que quepa en el celular aunque la letra sea grande */
+.fila-dia { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 4px 8px; align-items: center; padding: 6px 0 10px; border-bottom: 1px solid var(--borde); }
+.fila-dia .check { grid-column: 1 / -1; min-height: 40px; font-weight: 500; }
+.fila-dia input[type="time"] { min-height: 44px; padding: 6px 8px; border: 1px solid #CBD5E1; border-radius: var(--radio-sm); font: 1rem var(--fuente-cuerpo); width: 100%; min-width: 0; }
+.fila-dia input[type="time"]:disabled { opacity: .4; }
+.ocultos { margin-top: 12px; }
+.ocultos summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; font-weight: 500; color: var(--texto-2); }
+.fila-oculto { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--borde); }
+#tabla-por-persona { font-size: .9rem; }
+#tabla-por-persona th, #tabla-por-persona td { padding: 8px 4px; }
+#tabla-por-persona caption { caption-side: bottom; text-align: left; font-size: .8rem; padding-top: 6px; }
 
 /* ===== Responsive ===== */
 @media (min-width: 640px) {

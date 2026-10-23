@@ -1,4 +1,4 @@
-/* Página de precios y estado del auto. La reserva se hace en index.html (paso a paso). */
+/* Página "Mi auto": estado del auto por patente y lista de precios. La reserva se hace en index.html (paso a paso). */
 (async () => {
   const $ = (sel) => document.querySelector(sel);
   const esc = Datos.escapar;
@@ -12,20 +12,23 @@
     return;
   }
 
-  const textos = { nombre: negocio.nombre, direccion: negocio.direccion, horario: negocio.horario.texto };
+  const textos = { nombre: negocio.nombre, direccion: negocio.direccion, horario: negocio.horario.texto, telefono: negocio.telefono };
   document.querySelectorAll('[data-negocio]').forEach(el => { el.textContent = textos[el.dataset.negocio] ?? ''; });
-  document.title = `Precios y estado de tu auto · ${negocio.nombre}`;
-  const servicioPorId = (id) => servicios.find(s => s.id === id);
-  let vehiculo = negocio.tiposVehiculo[0].id;
+  document.title = `Mi auto · ${negocio.nombre}`;
+  const enlaceTelefono = `tel:${negocio.telefono.replace(/\s/g, '')}`;
+  $('#pie-telefono').href = enlaceTelefono;
+  const visibles = servicios.filter(s => !s.oculto);
+  const vehiculos = negocio.tiposVehiculo.filter(v => !v.oculto);
+  let vehiculo = vehiculos[0]?.id;
 
   // ---- Catálogo ----
   function pintarFiltro() {
-    $('#filtro-vehiculo').innerHTML = negocio.tiposVehiculo.map(v =>
+    $('#filtro-vehiculo').innerHTML = vehiculos.map(v =>
       `<button type="button" data-vehiculo="${esc(v.id)}" aria-pressed="${v.id === vehiculo}">${esc(v.nombre)}</button>`).join('');
   }
 
   function pintarServicios() {
-    $('#lista-servicios').innerHTML = servicios.filter(s => s.precios[vehiculo]).map(s => `
+    $('#lista-servicios').innerHTML = visibles.filter(s => s.precios[vehiculo]).map(s => `
       <article class="tarjeta servicio ${s.destacado ? 'destacado' : ''}">
         ${s.destacado ? '<span class="etiqueta-destacado">Más pedido</span>' : ''}
         <h3>${esc(s.nombre)}</h3>
@@ -43,24 +46,46 @@
     pintarServicios();
   });
 
-  // ---- Consulta de estado por patente ----
+  // ---- Estado del auto, explicado en una frase ----
+  function frase(r) {
+    const cierre = Datos.horarioDelDia(negocio, r.fecha).cierre;
+    if (r.estado === 'listo') return { titulo: 'Tu auto está listo', texto: `Puedes pasar a retirarlo. Estamos abiertos hasta las ${cierre}.`, clase: 'listo' };
+    if (r.estado === 'en-proceso') return { titulo: 'Estamos lavando tu auto', texto: 'Te avisaremos por WhatsApp cuando esté listo.', clase: 'en-proceso' };
+    if (r.estado === 'entregado') return { titulo: 'Auto entregado', texto: '¡Gracias por preferirnos!', clase: 'entregado' };
+    if (r.estado === 'cancelada') return { titulo: 'Reserva cancelada', texto: 'Si quieres, puedes reservar otra hora.', clase: 'cancelada' };
+    return {
+      titulo: 'Tu hora está reservada',
+      texto: r.confirmada ? 'Ya te la confirmamos por WhatsApp. ¡Te esperamos!' : 'Te enviaremos la confirmación por WhatsApp. No tienes que hacer nada más.',
+      clase: 'pendiente'
+    };
+  }
+
   async function consultar(patente) {
     const hoy = Datos.fechaISO();
     let suyas;
     try {
-      suyas = (await Datos.reservasPorPatente(patente)).filter(r => r.fecha >= hoy);
+      suyas = (await Datos.reservasPorPatente(patente)).filter(r => r.fecha >= hoy && !r.anulada);
     } catch {
       $('#resultado-estado').innerHTML = '<p class="texto-2" style="margin:0">No pudimos consultar en este momento. Intenta de nuevo.</p>';
       return;
     }
-    $('#resultado-estado').innerHTML = suyas.length
-      ? suyas.map(r => `
-          <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:10px 0;border-top:1px solid var(--borde)">
-            <span>${esc(servicioPorId(r.servicioId)?.nombre ?? r.servicioId)}<br>
-              <span class="texto-2">${r.fecha === hoy ? 'Hoy' : esc(r.fecha)} · ${esc(r.hora)} h</span></span>
-            <span class="chip ${esc(r.estado)}">${esc(Datos.ESTADOS[r.estado]?.texto ?? r.estado)}</span>
-          </div>`).join('')
-      : '<p class="texto-2" style="margin:0">No encontramos reservas activas para esa patente.</p>';
+    if (!suyas.length) {
+      $('#resultado-estado').innerHTML = `
+        <p class="texto-2" style="margin:0 0 12px">No encontramos reservas desde hoy para la patente <span class="patente">${esc(patente)}</span>.</p>
+        <a class="btn btn-secundario" href="${esc(enlaceTelefono)}"><svg class="icono" aria-hidden="true"><use href="#i-telefono"></use></svg> Llamar al local</a>`;
+      return;
+    }
+    $('#resultado-estado').innerHTML = suyas.map(r => {
+      const f = frase(r);
+      return `
+        <div class="estado-auto ${esc(f.clase)}">
+          <strong class="estado-auto-titulo">${esc(f.titulo)}</strong>
+          <span>${esc(f.texto)}</span>
+          <span class="texto-2">${esc(UI.textoDia(r.fecha))}, ${esc(r.hora)} h · ${esc(Datos.nombreServicio(servicios, r.servicioId, r.servicioNombre))}</span>
+        </div>`;
+    }).join('') + `
+      <a class="btn btn-secundario" href="${esc(enlaceTelefono)}" style="margin-top:12px">
+        <svg class="icono" aria-hidden="true"><use href="#i-telefono"></use></svg> Llamar al local</a>`;
   }
 
   $('#form-estado').addEventListener('submit', (e) => {

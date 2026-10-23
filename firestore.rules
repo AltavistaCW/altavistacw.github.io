@@ -50,10 +50,13 @@ service cloud.firestore {
     }
 
     // Registro de actividades: cada trabajador crea y ve las suyas; el dueño ve, corrige y borra todas.
+    // Un trabajador puede borrar un registro suyo durante 15 minutos (botón "Deshacer").
     match /actividades/{id} {
       allow read: if esDueno() || (esEquipo() && resource.data.uid == request.auth.uid);
       allow create: if esDueno() || (esEquipo() && request.resource.data.uid == request.auth.uid);
-      allow update, delete: if esDueno();
+      allow update: if esDueno();
+      allow delete: if esDueno()
+        || (esEquipo() && resource.data.uid == request.auth.uid && request.time.toMillis() - resource.data.ts < 15 * 60 * 1000);
     }
   }
 }

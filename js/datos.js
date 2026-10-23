@@ -30,6 +30,18 @@ const Datos = (() => {
 
   const ROLES = { dueno: 'Dueño', trabajador: 'Trabajador' };
 
+  // Cómo ve el cliente cada estado (más claro que el nombre interno).
+  const ESTADOS_CLIENTE = {
+    'pendiente':  'Reservado',
+    'en-proceso': 'Lavándose',
+    'listo':      'Listo para retirar',
+    'entregado':  'Entregado',
+    'cancelada':  'Cancelada'
+  };
+
+  // Minutos de atraso tras los cuales una reserva sin llegar deja de ocupar lugar.
+  const TOLERANCIA_ATRASO = 15;
+
   async function cargarJSON(ruta) {
     const resp = await fetch(ruta, { cache: 'no-store' });
     if (!resp.ok) throw new Error(`No se pudo cargar ${ruta}`);
@@ -64,6 +76,11 @@ const Datos = (() => {
 
   const normalizarPatente = (txt) => String(txt ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '');
   const nuevoId = (prefijo) => prefijo + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2, 5).toUpperCase();
+  // Código corto para reservas (fácil de dictar): sin letras que se confunden (0/O, 1/I/L).
+  const idCorto = (prefijo) => prefijo + Array.from({ length: 5 }, () => '23456789ABCDEFGHJKMNPQRSTUVWXYZ'[Math.floor(Math.random() * 31)]).join('');
+  // Nombre del servicio aunque se haya ocultado o borrado del catálogo.
+  const nombreServicio = (servicios, id, respaldo) => servicios.find(s => s.id === id)?.nombre ?? respaldo ?? id;
+  const textoEstado = (r) => (r.estado === 'cancelada' && r.noLlego ? 'No llegó' : r.anulada ? 'Anulada' : ESTADOS[r.estado]?.texto ?? r.estado);
   const sinId = (doc) => { if (!doc) return doc; const { id, ...resto } = doc; return resto; };
 
   // Todo espera a que el almacén esté listo. En modo demo, la primera vez se cargan los datos de ejemplo.
@@ -116,7 +133,7 @@ const Datos = (() => {
   // Reserva hecha por un cliente desde la web.
   async function crearReserva({ cliente, telefono, comentario = '', ...datos }) {
     await listo;
-    const id = nuevoId('R');
+    const id = idCorto('R');
     const reserva = { ...datos, patente: normalizarPatente(datos.patente), estado: 'pendiente', origen: 'web', creada: new Date().toISOString() };
     await Almacen.lote([
       { coleccion: 'reservas', id, datos: reserva },
@@ -148,6 +165,30 @@ const Datos = (() => {
   const confirmarReserva = (reserva, autor) => actualizarReserva(reserva.id, { confirmada: Date.now(), confirmadaPor: autor.nombre });
   const cambiarEstado = (id, estado) => actualizarReserva(id, { estado });
 
+  // Minutos de atraso de una reserva pendiente de hoy (0 si no está atrasada).
+  function atraso(r, ahora = new Date()) {
+    if (r.estado !== 'pendiente' || r.fecha !== fechaISO(ahora)) return 0;
+    return Math.max(0, ahora.getHours() * 60 + ahora.getMinutes() - aMinutos(r.hora));
+  }
+
+  const marcarNoLlego = (reserva, autor) => actualizarReserva(reserva.id, { estado: 'cancelada', noLlego: true, canceladaPor: autor.nombre });
+  const cancelarReserva = (reserva, autor) => actualizarReserva(reserva.id, { estado: 'cancelada', noLlego: null, canceladaPor: autor.nombre });
+  const reactivarReserva = (reserva) => actualizarReserva(reserva.id, { estado: 'pendiente', noLlego: null, anulada: null, canceladaPor: null });
+
+  // Dejar asignada una reserva a alguien (antes de empezar), o cambiar quién la tiene a cargo.
+  function asignarReserva(reserva, persona) {
+    return reserva.estado === 'pendiente'
+      ? actualizarReserva(reserva.id, { asignadoUid: persona.uid, asignadoNombre: persona.nombre })
+      : actualizarReserva(reserva.id, { trabajadorUid: persona.uid, trabajadorNombre: persona.nombre });
+  }
+
+  // Cambiar día u hora: queda "por confirmar" otra vez para avisarle al cliente.
+  async function reprogramarReserva(reserva, { fecha, hora }) {
+    await listo;
+    await actualizarReserva(reserva.id, { fecha, hora, confirmada: null });
+    await Almacen.actualizar('contactos', reserva.id, { fecha }).catch(() => {});
+  }
+
   // Antes de tomar un auto se revisa el estado más reciente: otro trabajador pudo tomarlo recién.
   async function iniciarLavado(reserva, trabajador) {
     await listo;
@@ -161,23 +202,44 @@ const Datos = (() => {
     });
   }
 
+  // ---- Deshacer (por si se tocó el botón equivocado) ----
+  const deshacerInicio = (reserva) => actualizarReserva(reserva.id, { estado: 'pendiente', trabajadorUid: null, trabajadorNombre: null, inicio: null });
+  const anularSinReserva = (reserva) => actualizarReserva(reserva.id, { estado: 'cancelada', anulada: true });
+  async function deshacerTermino(reserva, actividad) {
+    await actualizarReserva(reserva.id, { estado: 'en-proceso', fin: null });
+    if (actividad) await Almacen.borrar('actividades', actividad.id);
+  }
+  async function deshacerCobro(reserva, actividad) {
+    await actualizarReserva(reserva.id, { estado: 'listo', cobrado: null, medioPago: null, entregada: null, motivoAjuste: null });
+    if (actividad) await Almacen.borrar('actividades', actividad.id);
+  }
+
   // El lavado se registra a nombre de quien lo tenía a cargo, aunque lo marque otra persona (ej. el dueño).
   async function terminarLavado(reserva, autor) {
     const fin = Date.now();
     const trabajador = reserva.trabajadorUid ? { uid: reserva.trabajadorUid, nombre: reserva.trabajadorNombre } : autor;
     await actualizarReserva(reserva.id, { estado: 'listo', fin, trabajadorUid: trabajador.uid, trabajadorNombre: trabajador.nombre });
-    await registrarActividad(trabajador, {
-      tipo: 'lavado', reservaId: reserva.id, patente: reserva.patente, servicioId: reserva.servicioId, vehiculo: reserva.vehiculo,
-      minutos: reserva.inicio ? Math.max(1, Math.round((fin - reserva.inicio) / 60000)) : null
+    return registrarActividad(trabajador, {
+      tipo: 'lavado', reservaId: reserva.id, patente: reserva.patente, servicioId: reserva.servicioId, servicioNombre: reserva.servicioNombre,
+      vehiculo: reserva.vehiculo, minutos: reserva.inicio ? Math.max(1, Math.round((fin - reserva.inicio) / 60000)) : null
     }, autor);
   }
 
   // El cobro queda a nombre de quien recibe el dinero.
-  async function cobrar(reserva, { monto, medioPago }, autor) {
-    await actualizarReserva(reserva.id, { estado: 'entregado', cobrado: monto, medioPago, entregada: Date.now() });
-    await registrarActividad(autor, {
-      tipo: 'cobro', reservaId: reserva.id, patente: reserva.patente, servicioId: reserva.servicioId, monto, medioPago
+  // motivo: por qué se cobró distinto al precio de lista (descuento, cortesía, etc.).
+  async function cobrar(reserva, { monto, medioPago, motivo }, autor) {
+    await actualizarReserva(reserva.id, { estado: 'entregado', cobrado: monto, medioPago, entregada: Date.now(), motivoAjuste: motivo || null });
+    return registrarActividad(autor, {
+      tipo: 'cobro', reservaId: reserva.id, patente: reserva.patente, servicioId: reserva.servicioId, servicioNombre: reserva.servicioNombre,
+      monto, medioPago, motivo: motivo || undefined, precioLista: reserva.precio
     });
+  }
+
+  // Corregir un cobro desde Actividad: cambia el registro y la reserva a la vez, para que caja y "Cobrado" cuadren.
+  async function editarCobro(actividad, { monto, medioPago }) {
+    await listo;
+    await Almacen.actualizar('actividades', actividad.id, { monto, medioPago });
+    if (actividad.reservaId) await actualizarReserva(actividad.reservaId, { cobrado: monto, medioPago }).catch(() => {});
   }
 
   // ---- Actividades del equipo ----
@@ -202,7 +264,14 @@ const Datos = (() => {
     return { ...actividad, id };
   }
 
-  async function borrarActividad(id) { await listo; await Almacen.borrar('actividades', id); }
+  // Al borrar un cobro, la reserva vuelve a "Listo" sin monto: así la caja y "Cobrado" siguen cuadrando.
+  async function borrarActividad(actividad) {
+    await listo;
+    await Almacen.borrar('actividades', actividad.id);
+    if (actividad.tipo === 'cobro' && actividad.reservaId) {
+      await actualizarReserva(actividad.reservaId, { estado: 'listo', cobrado: null, medioPago: null, entregada: null }).catch(() => {});
+    }
+  }
 
   const esMarca = (a) => a.tipo === 'entrada' || a.tipo === 'salida';
 
@@ -230,6 +299,9 @@ const Datos = (() => {
     const enTurno = ultima?.tipo === 'entrada';
     return { enTurno, desde: enTurno ? ultima.hora : null };
   }
+
+  // ¿Hay algún turno de hoy sin marcar salida? (para aclarar que las horas incluyen turnos en curso)
+  const hayTurnosAbiertos = (lista) => [...new Set(lista.map(a => a.uid))].some(uid => turnoDeHoy(lista, uid).enTurno);
 
   // ---- Sesión ----
   let usuarioEnCache = null;
@@ -361,16 +433,45 @@ const Datos = (() => {
     usuarioEnCache = null;
   }
 
+  // ---- Horario ----
+  // Horario de un día. Usa el horario por día (horario.dias, clave = 0 domingo … 6 sábado) y, si no existe, el general.
+  function horarioDelDia(negocio, fecha) {
+    const h = negocio.horario;
+    const d = new Date(fecha + 'T12:00:00').getDay();
+    const propio = h.dias?.[d];
+    if (propio) return { abierto: Boolean(propio.abierto), apertura: propio.apertura || h.apertura, cierre: propio.cierre || h.cierre };
+    return { abierto: !(h.diasCerrado ?? []).includes(d), apertura: h.apertura, cierre: h.cierre };
+  }
+
+  function estaAbierto(negocio, ahora = new Date()) {
+    const h = horarioDelDia(negocio, fechaISO(ahora));
+    const m = ahora.getHours() * 60 + ahora.getMinutes();
+    return h.abierto && m >= aMinutos(h.apertura) && m < aMinutos(h.cierre) ? h : null;
+  }
+
+  // Próxima apertura, para avisos como "abre mañana a las 09:00". enDias: 0 hoy, 1 mañana…
+  function proximaApertura(negocio, ahora = new Date()) {
+    const m = ahora.getHours() * 60 + ahora.getMinutes();
+    for (let i = 0; i < 8; i++) {
+      const fecha = sumarDias(fechaISO(ahora), i);
+      const h = horarioDelDia(negocio, fecha);
+      if (!h.abierto || (i === 0 && m >= aMinutos(h.apertura))) continue;
+      return { fecha, hora: h.apertura, enDias: i };
+    }
+    return null;
+  }
+
   // ---- Disponibilidad ----
   // Un horario está libre si, durante toda la duración del servicio, hay menos autos que la capacidad del local.
-  function horariosDisponibles({ negocio, servicios, reservas, fecha, duracionMin }) {
-    const { apertura, cierre, intervaloMin, diasCerrado = [] } = negocio.horario;
-    const diaSemana = new Date(fecha + 'T12:00:00').getDay();
-    if (diasCerrado.includes(diaSemana)) return [];
+  // excluirId: la reserva que se está reprogramando no cuenta como ocupada.
+  function horariosDisponibles({ negocio, servicios, reservas, fecha, duracionMin, excluirId }) {
+    const { intervaloMin } = negocio.horario;
+    const { abierto, apertura, cierre } = horarioDelDia(negocio, fecha);
+    if (!abierto) return [];
 
     const duracionDe = (r) => r.duracionMin ?? servicios.find(s => s.id === r.servicioId)?.duracionMin ?? 30;
     const ocupadas = reservas
-      .filter(r => r.fecha === fecha && r.estado !== 'cancelada')
+      .filter(r => r.fecha === fecha && r.estado !== 'cancelada' && r.id !== excluirId)
       .map(r => ({ ini: aMinutos(r.hora), fin: aMinutos(r.hora) + duracionDe(r) }));
 
     const ahora = new Date();
@@ -388,25 +489,28 @@ const Datos = (() => {
 
   // ---- Ocupación del local en un rato ----
   // Autos que ocupan el local (pendientes y en proceso) entre desdeMin y desdeMin + duracionMin.
-  // ahoraMin (solo hoy): un lavado atrasado sigue ocupando, y una reserva que ya pasó sin llegar deja de contar.
-  function tramosDelDia({ reservas, servicios, fecha, ahoraMin = null }) {
+  // ahoraMin (solo hoy): un lavado que se pasa del tiempo sigue ocupando, y una reserva con más de
+  // TOLERANCIA_ATRASO minutos de atraso deja de contar (el cliente no llegó).
+  // incluirHechos: agrega los autos ya lavados (solo para mostrarlos en la agenda; no ocupan lugar).
+  function tramosDelDia({ reservas, servicios, fecha, ahoraMin = null, incluirHechos = false }) {
+    const minutoDe = (ts) => { const d = new Date(ts); return d.getHours() * 60 + d.getMinutes(); };
     return reservas
-      .filter(r => r.fecha === fecha && (r.estado === 'pendiente' || r.estado === 'en-proceso'))
+      .filter(r => r.fecha === fecha && (r.estado === 'pendiente' || r.estado === 'en-proceso'
+        || (incluirHechos && (r.estado === 'listo' || r.estado === 'entregado'))))
       .map(r => {
         const dur = r.duracionMin ?? servicios.find(s => s.id === r.servicioId)?.duracionMin ?? 30;
-        let ini = aMinutos(r.hora);
-        if (r.estado === 'en-proceso' && r.inicio) { const d = new Date(r.inicio); ini = d.getHours() * 60 + d.getMinutes(); }
-        let fin = ini + dur;
+        let ini = r.inicio && r.estado !== 'pendiente' ? minutoDe(r.inicio) : aMinutos(r.hora);
+        let fin = r.fin && (r.estado === 'listo' || r.estado === 'entregado') ? Math.max(minutoDe(r.fin), ini + 1) : ini + dur;
         if (ahoraMin != null && r.estado === 'en-proceso') fin = Math.max(fin, ahoraMin + 5);
-        if (ahoraMin != null && r.estado === 'pendiente' && fin <= ahoraMin) return null;
-        return { reserva: r, ini, fin };
+        if (ahoraMin != null && r.estado === 'pendiente' && ahoraMin > aMinutos(r.hora) + TOLERANCIA_ATRASO) return null;
+        return { reserva: r, ini, fin, hecho: r.estado === 'listo' || r.estado === 'entregado' };
       })
       .filter(Boolean);
   }
 
   function ocupacionEntre({ desdeMin, duracionMin, ...datos }) {
     const finMin = desdeMin + duracionMin;
-    const tramos = tramosDelDia(datos).filter(t => t.ini < finMin && t.fin > desdeMin);
+    const tramos = tramosDelDia({ ...datos, incluirHechos: false }).filter(t => t.ini < finMin && t.fin > desdeMin);
     // El momento más lleno está al inicio o cuando empieza alguna reserva dentro del rato.
     const momentos = [desdeMin, ...tramos.map(t => t.ini).filter(m => m > desdeMin)];
     let maximo = 0, momentoLleno = desdeMin;
@@ -417,12 +521,28 @@ const Datos = (() => {
     return { maximo, momentoLleno: aHora(momentoLleno), tramos };
   }
 
+  // Primera hora (desde ahora, en pasos del intervalo) en que cabe un lavado de duracionMin, antes del cierre.
+  function proximoLugarLibre({ negocio, reservas, servicios, fecha, ahoraMin, duracionMin }) {
+    const { intervaloMin } = negocio.horario;
+    const { abierto, cierre } = horarioDelDia(negocio, fecha);
+    if (!abierto) return null;
+    let m = Math.ceil((ahoraMin + 1) / intervaloMin) * intervaloMin;
+    for (; m + duracionMin <= aMinutos(cierre); m += intervaloMin) {
+      const o = ocupacionEntre({ reservas, servicios, fecha, ahoraMin, desdeMin: m, duracionMin });
+      if (o.maximo < negocio.capacidadSimultanea) return aHora(m);
+    }
+    return null;
+  }
+
   return {
-    modo, ESTADOS, TIPOS_ACTIVIDAD, ROLES, tramosDelDia, ocupacionEntre, aMinutos, aHora,
+    modo, ESTADOS, ESTADOS_CLIENTE, TIPOS_ACTIVIDAD, ROLES, TOLERANCIA_ATRASO, tramosDelDia, ocupacionEntre, proximoLugarLibre, aMinutos, aHora,
+    horarioDelDia, estaAbierto, proximaApertura, nombreServicio, textoEstado, atraso,
     negocio, servicios, configGuardada, guardarNegocio, guardarServicios, subirConfigInicial,
     reservas, reservasConContacto, reservasPorPatente, crearReserva, registrarAutoSinReserva,
     actualizarReserva, cambiarEstado, porConfirmar, confirmarReserva, iniciarLavado, terminarLavado, cobrar,
-    actividades, registrarActividad, borrarActividad, minutosTrabajados, turnoDeHoy,
+    marcarNoLlego, cancelarReserva, reactivarReserva, asignarReserva, reprogramarReserva,
+    deshacerInicio, anularSinReserva, deshacerTermino, deshacerCobro, editarCobro,
+    actividades, registrarActividad, borrarActividad, minutosTrabajados, turnoDeHoy, hayTurnosAbiertos,
     usuarioActual, ingresar, salir, exigirSesion, pantallaDe, recuperarClave,
     equipo, agregarMiembro, actualizarMiembro, reiniciarDemo,
     horariosDisponibles, fechaISO, sumarDias, horaActual, dinero, formatoHoras, escapar, normalizarPatente

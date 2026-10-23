@@ -51,7 +51,7 @@ Plan gratuito (Spark) de Firebase: alcanza de sobra para un local (50.000 lectur
 | Motor de guardado (navegador o Firebase) | `js/almacen.js` |
 | Ventanas, mensajes y pestañas compartidas | `js/ui.js` |
 | Cada pantalla | `js/reserva.js` (inicio), `js/cliente.js`, `js/ingreso.js`, `js/trabajador.js`, `js/dueno.js` |
-| Archivos para uso sin conexión | `sw.js` (al agregar un archivo, sumarlo a la lista y subir la versión `altavista-v4` → `v5`) |
+| Archivos para uso sin conexión | `sw.js` (al agregar un archivo, sumarlo a la lista y subir la versión `altavista-v5` → `v6`) |
 
 ## Probar en el computador
 

@@ -4,7 +4,7 @@
  * (precios al día); si no hay, se muestra la última copia guardada.
  * Al agregar archivos nuevos a la app, sumarlos a ARCHIVOS y subir la versión de CACHE.
  */
-const CACHE = 'altavista-v4';
+const CACHE = 'altavista-v5';
 const ARCHIVOS = [
   './', 'index.html', 'cliente.html', 'dueno.html', 'ingreso.html', 'trabajador.html',
   'css/estilos.css',
