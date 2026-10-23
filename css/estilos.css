@@ -586,6 +586,10 @@ form > .error, .tarjeta > .error { margin-bottom: 12px; font-size: .9rem; }
 .estado-auto.en-proceso { border-left-color: #2563EB; background: #EFF6FF; }
 .estado-auto.listo { border-left-color: #16A34A; background: #F0FDF4; }
 .estado-auto.cancelada { border-left-color: #DC2626; background: #FEF2F2; }
+.estado-hoy { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 12px; padding: 4px 12px; border-radius: 999px; background: #FEE2E2; color: #991B1B; font-weight: 500; }
+.estado-hoy::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.estado-hoy.abierto { background: #DCFCE7; color: #166534; }
+.estado-hoy:empty { display: none; }
 
 /* Panel: horario por día, ocultos, tabla */
 .horario-dias { border: 0; padding: 0; }

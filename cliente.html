@@ -48,22 +48,31 @@
       </div>
     </section>
 
-    <!-- Servicios -->
-    <section class="seccion" id="servicios" aria-labelledby="titulo-servicios" style="padding-top:0">
+    <!-- Contacto: lo que necesita alguien que ya tiene su hora (llamar, escribir, llegar) -->
+    <section class="seccion" aria-labelledby="titulo-contacto" style="padding-top:0">
       <div class="contenedor">
-        <h2 id="titulo-servicios">Servicios y precios</h2>
-        <p class="texto-2">Selecciona tu tipo de vehículo para ver el precio.</p>
-        <div class="segmentado" id="filtro-vehiculo" role="group" aria-label="Tipo de vehículo"></div>
-        <div class="grilla servicios" id="lista-servicios" aria-live="polite"></div>
+        <div class="tarjeta contacto-local" style="max-width:560px">
+          <h2 id="titulo-contacto" style="font-size:1.25rem">¿Necesitas algo?</h2>
+          <p class="estado-hoy" id="horario-hoy"></p>
+          <div class="grilla">
+            <a class="btn btn-secundario btn-bloque" id="c-llamar" href="#">
+              <svg class="icono" aria-hidden="true"><use href="#i-telefono"></use></svg> Llamar al local
+            </a>
+            <a class="btn btn-secundario btn-bloque" id="c-whatsapp" href="#" target="_blank" rel="noopener">
+              <svg class="icono" aria-hidden="true"><use href="#i-mensaje"></use></svg> Escribir por WhatsApp
+            </a>
+            <a class="btn btn-secundario btn-bloque" id="c-mapa" href="#" target="_blank" rel="noopener">
+              <svg class="icono" aria-hidden="true"><use href="#i-ubicacion"></use></svg> Cómo llegar
+            </a>
+          </div>
+          <p class="texto-2" style="margin:12px 0 0"><span data-negocio="direccion"></span> · <span data-negocio="horario"></span></p>
+        </div>
       </div>
     </section>
   </main>
 
   <footer>
-    <div class="contenedor">
-      <span data-negocio="nombre"></span> · <span data-negocio="direccion"></span><br>
-      <span data-negocio="horario"></span> · <a id="pie-telefono" data-negocio="telefono" href="#"></a>
-    </div>
+    <div class="contenedor"><span data-negocio="nombre"></span></div>
   </footer>
 
   <script src="js/pwa.js"></script>
