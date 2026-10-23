@@ -2,9 +2,11 @@
  * Service worker: guarda una copia de la app en el celular.
  * Estrategia "primero internet": si hay conexión se usa siempre la versión más nueva
  * (precios al día); si no hay, se muestra la última copia guardada.
+ * Se pide con cache 'no-cache' para que el celular pregunte al servidor si hay versión nueva
+ * en vez de reusar su copia (GitHub Pages permite reusarla hasta 10 minutos).
  * Al agregar archivos nuevos a la app, sumarlos a ARCHIVOS y subir la versión de CACHE.
  */
-const CACHE = 'altavista-v5';
+const CACHE = 'altavista-v6';
 const ARCHIVOS = [
   './', 'index.html', 'cliente.html', 'dueno.html', 'ingreso.html', 'trabajador.html',
   'css/estilos.css',
@@ -16,7 +18,11 @@ const ARCHIVOS = [
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ARCHIVOS)).then(() => self.skipWaiting()));
+  e.waitUntil(
+    caches.open(CACHE)
+      .then(c => c.addAll(ARCHIVOS.map(a => new Request(a, { cache: 'reload' }))))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', (e) => {
@@ -32,7 +38,7 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return; // fuentes y WhatsApp pasan directo
 
   e.respondWith(
-    fetch(req)
+    fetch(req, { cache: 'no-cache' })
       .then(resp => {
         if (resp.ok) {
           const copia = resp.clone();
